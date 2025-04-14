@@ -1,0 +1,39 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>Your Goals</h2>
+    </div>
+    <div class="card-body">
+        {% if goals %}
+            <ul class="list-group">
+                {% for goal in goals %}
+                    <li class="list-group-item">{{ goal.description }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No goals set yet. <a href="{% url 'set_goal' %}">Set a goal</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Workout History</h2>
+    </div>
+    <div class="card-body">
+        {% if workouts %}
+            <ul class="list-group">
+                {% for workout in workouts %}
+                    <li class="list-group-item">{{ workout.description }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No workouts logged yet. <a href="{% url 'log_workout' %}">Log a workout</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,12 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Log Workout</h1>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        {{ form.as_p }}
+    </div>
+    <button type="submit" class="btn btn-primary">Add Workout</button>
+</form>
+{% endblock %} 
