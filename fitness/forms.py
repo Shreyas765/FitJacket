@@ -1,18 +1,23 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from .models import Goal, Workout
+from .models import CustomUser, Goal, Workout, CoachSuggestion
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    user_type = forms.ChoiceField(
+        choices=CustomUser.USER_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        initial='user'
+    )
 
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        model = CustomUser
+        fields = ['username', 'email', 'password1', 'password2', 'user_type']
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        user.user_type = self.cleaned_data['user_type']
         if commit:
             user.save()
         return user
@@ -31,4 +36,20 @@ class WorkoutForm(forms.ModelForm):
         fields = ['description']
         widgets = {
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 30 min cardio'})
+        }
+
+class CoachFeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Goal
+        fields = ['coach_feedback']
+        widgets = {
+            'coach_feedback': forms.Textarea(attrs={'class': 'form-control', 'rows': 3})
+        }
+
+class CoachSuggestionForm(forms.ModelForm):
+    class Meta:
+        model = CoachSuggestion
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter your suggestion here...'})
         } 

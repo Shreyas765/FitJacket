@@ -1,0 +1,28 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<h1 class="mb-4">Coach Dashboard</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Your Users</h2>
+    </div>
+    <div class="card-body">
+        {% if users %}
+            <div class="list-group">
+                {% for user in users %}
+                    <a href="{% url 'user_profile' user.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ user.username }}</h5>
+                            <small>{{ user.email }}</small>
+                        </div>
+                        <p class="mb-1">Goals: {{ user.goal_set.count }} | Workouts: {{ user.workout_set.count }}</p>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No users assigned to you yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

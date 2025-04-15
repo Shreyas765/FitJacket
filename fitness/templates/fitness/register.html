@@ -19,6 +19,17 @@
         {% endif %}
     </div>
     <div class="mb-3">
+        <label class="form-label">Account Type</label>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="user_type" id="id_user_type_0" value="user" checked>
+            <label class="form-check-label" for="id_user_type_0">User</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="user_type" id="id_user_type_1" value="coach">
+            <label class="form-check-label" for="id_user_type_1">Coach</label>
+        </div>
+    </div>
+    <div class="mb-3">
         <label for="id_password1" class="form-label">Password</label>
         <input type="password" name="password1" id="id_password1" class="form-control" required>
         {% if form.password1.errors %}

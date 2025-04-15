@@ -1,0 +1,25 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Provide Feedback</h1>
+    <a href="{% url 'user_profile' item.user.id %}" class="btn btn-outline-primary">Back to Profile</a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{ item.user.username }}'s {{ model_type|title }}</h5>
+        <p class="card-text">{{ item.description }}</p>
+        <p class="card-text"><small class="text-muted">Created on {{ item.created_at|date:"M d, Y" }}</small></p>
+        
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_coach_feedback" class="form-label">Your Feedback</label>
+                {{ form.coach_feedback }}
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+        </form>
+    </div>
+</div>
+{% endblock %} 

@@ -1,13 +1,16 @@
 {% extends 'fitness/base.html' %}
 
 {% block content %}
-<h1 class="mb-4">Dashboard</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ profile_user.username }}'s Profile</h1>
+    <a href="{% url 'coach_dashboard' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+</div>
 
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-4">
             <div class="card-header">
-                <h2>Your Goals</h2>
+                <h2>Goals</h2>
             </div>
             <div class="card-body">
                 {% if goals %}
@@ -19,13 +22,16 @@
                                     <small>{{ goal.created_at|date:"M d, Y" }}</small>
                                 </div>
                                 {% if goal.coach_feedback %}
-                                    <p class="mb-1"><strong>Coach Feedback:</strong> {{ goal.coach_feedback }}</p>
+                                    <p class="mb-1"><strong>Your Feedback:</strong> {{ goal.coach_feedback }}</p>
                                 {% endif %}
+                                <a href="{% url 'provide_feedback' 'goal' goal.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    {% if goal.coach_feedback %}Update Feedback{% else %}Provide Feedback{% endif %}
+                                </a>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p>No goals set yet. <a href="{% url 'set_goal' %}">Set a goal</a></p>
+                    <p>No goals set yet.</p>
                 {% endif %}
             </div>
         </div>
@@ -34,7 +40,7 @@
     <div class="col-md-6">
         <div class="card mb-4">
             <div class="card-header">
-                <h2>Workout History</h2>
+                <h2>Workouts</h2>
             </div>
             <div class="card-body">
                 {% if workouts %}
@@ -46,40 +52,30 @@
                                     <small>{{ workout.created_at|date:"M d, Y" }}</small>
                                 </div>
                                 {% if workout.coach_feedback %}
-                                    <p class="mb-1"><strong>Coach Feedback:</strong> {{ workout.coach_feedback }}</p>
+                                    <p class="mb-1"><strong>Your Feedback:</strong> {{ workout.coach_feedback }}</p>
                                 {% endif %}
+                                <a href="{% url 'provide_feedback' 'workout' workout.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    {% if workout.coach_feedback %}Update Feedback{% else %}Provide Feedback{% endif %}
+                                </a>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p>No workouts logged yet. <a href="{% url 'log_workout' %}">Log a workout</a></p>
+                    <p>No workouts logged yet.</p>
                 {% endif %}
             </div>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h2>Coach Suggestions</h2>
+                <h2>Send Suggestion</h2>
             </div>
             <div class="card-body">
-                {% if suggestions %}
-                    <div class="list-group">
-                        {% for suggestion in suggestions %}
-                            <div class="list-group-item {% if not suggestion.is_read %}list-group-item-info{% endif %}">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">From: {{ suggestion.coach.username }}</h5>
-                                    <small>{{ suggestion.created_at|date:"M d, Y" }}</small>
-                                </div>
-                                <p class="mb-1">{{ suggestion.content }}</p>
-                                {% if not suggestion.is_read %}
-                                    <a href="{% url 'mark_suggestion_read' suggestion.id %}" class="btn btn-sm btn-outline-primary mt-2">Mark as Read</a>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p>No suggestions from your coach yet.</p>
-                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary">Send Suggestion</button>
+                </form>
             </div>
         </div>
     </div>

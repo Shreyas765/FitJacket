@@ -23,8 +23,12 @@
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'dashboard' %}">FitJacket</a>
                 <div class="navbar-nav">
-                    <a class="nav-link" href="{% url 'set_goal' %}">Set Goal</a>
-                    <a class="nav-link" href="{% url 'log_workout' %}">Log Workout</a>
+                    {% if user.user_type == 'user' %}
+                        <a class="nav-link" href="{% url 'set_goal' %}">Set Goal</a>
+                        <a class="nav-link" href="{% url 'log_workout' %}">Log Workout</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'coach_dashboard' %}">Coach Dashboard</a>
+                    {% endif %}
                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                 </div>
             </div>
