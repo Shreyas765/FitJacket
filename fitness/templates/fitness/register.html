@@ -1,49 +1,112 @@
 {% extends 'fitness/base.html' %}
 
+{% block title %}Register - FitJacket{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Register</h1>
-<form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="id_username" class="form-label">Username</label>
-        <input type="text" name="username" id="id_username" class="form-control" required>
-        {% if form.username.errors %}
-            <div class="alert alert-danger">{{ form.username.errors }}</div>
-        {% endif %}
-    </div>
-    <div class="mb-3">
-        <label for="id_email" class="form-label">Email</label>
-        <input type="email" name="email" id="id_email" class="form-control" required>
-        {% if form.email.errors %}
-            <div class="alert alert-danger">{{ form.email.errors }}</div>
-        {% endif %}
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Account Type</label>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="user_type" id="id_user_type_0" value="user" checked>
-            <label class="form-check-label" for="id_user_type_0">User</label>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Create Your FitJacket Account</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Please correct the errors below.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_username" class="form-label">Username</label>
+                            <input type="text" name="username" id="id_username" class="form-control" required>
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.username.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_email" class="form-label">Email</label>
+                            <input type="email" name="email" id="id_email" class="form-control" required>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.email.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_password1" class="form-label">Password</label>
+                            <input type="password" name="password1" id="id_password1" class="form-control" required>
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password1.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_password2" class="form-label">Confirm Password</label>
+                            <input type="password" name="password2" id="id_password2" class="form-control" required>
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.password2.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Account Type</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="user_type" id="id_user_type_0" value="user" checked>
+                                <label class="btn btn-outline-primary" for="id_user_type_0">User</label>
+                                
+                                <input type="radio" class="btn-check" name="user_type" id="id_user_type_1" value="coach">
+                                <label class="btn btn-outline-primary" for="id_user_type_1">Coach</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_fitness_level" class="form-label">Fitness Level</label>
+                            <select name="fitness_level" id="id_fitness_level" class="form-select" required>
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_bio" class="form-label">Bio</label>
+                        <textarea name="bio" id="id_bio" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_profile_picture" class="form-label">Profile Picture</label>
+                        <input type="file" name="profile_picture" id="id_profile_picture" class="form-control">
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="user_type" id="id_user_type_1" value="coach">
-            <label class="form-check-label" for="id_user_type_1">Coach</label>
+        
+        <div class="card mt-3">
+            <div class="card-body text-center">
+                <p class="mb-0">Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Login here</a></p>
+            </div>
         </div>
     </div>
-    <div class="mb-3">
-        <label for="id_password1" class="form-label">Password</label>
-        <input type="password" name="password1" id="id_password1" class="form-control" required>
-        {% if form.password1.errors %}
-            <div class="alert alert-danger">{{ form.password1.errors }}</div>
-        {% endif %}
-    </div>
-    <div class="mb-3">
-        <label for="id_password2" class="form-label">Confirm Password</label>
-        <input type="password" name="password2" id="id_password2" class="form-control" required>
-        {% if form.password2.errors %}
-            <div class="alert alert-danger">{{ form.password2.errors }}</div>
-        {% endif %}
-    </div>
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
-<p class="mt-3">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+</div>
 {% endblock %} 

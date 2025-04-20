@@ -1,12 +1,92 @@
 {% extends 'fitness/base.html' %}
 
+{% block title %}Log Workout - FitJacket{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Log Workout</h1>
-<form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        {{ form.as_p }}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Log Your Workout</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Please correct the errors below.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_workout_type" class="form-label">Workout Type</label>
+                            <select name="workout_type" id="id_workout_type" class="form-select" required>
+                                <option value="">Select a type</option>
+                                <option value="cardio">Cardio</option>
+                                <option value="strength">Strength Training</option>
+                                <option value="flexibility">Flexibility</option>
+                                <option value="hiit">HIIT</option>
+                                <option value="other">Other</option>
+                            </select>
+                            {% if form.workout_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.workout_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_duration" class="form-label">Duration (minutes)</label>
+                            <input type="number" name="duration" id="id_duration" class="form-control" min="1" required>
+                            {% if form.duration.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.duration.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Description</label>
+                        <textarea name="description" id="id_description" class="form-control" rows="3" required></textarea>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_calories_burned" class="form-label">Calories Burned (optional)</label>
+                            <input type="number" name="calories_burned" id="id_calories_burned" class="form-control" min="0">
+                            {% if form.calories_burned.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.calories_burned.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_location" class="form-label">Location (optional)</label>
+                            <input type="text" name="location" id="id_location" class="form-control">
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.location.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Log Workout</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Add Workout</button>
-</form>
+</div>
 {% endblock %} 

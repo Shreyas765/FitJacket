@@ -1,12 +1,80 @@
 {% extends 'fitness/base.html' %}
 
+{% block title %}Set Goal - FitJacket{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Set Fitness Goal</h1>
-<form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        {{ form.as_p }}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Set Your Fitness Goal</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Please correct the errors below.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Goal Description</label>
+                        <textarea name="description" id="id_description" class="form-control" rows="3" required 
+                                  placeholder="e.g., Run a 5K in under 30 minutes, Lose 10 pounds in 3 months, etc."></textarea>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.description.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_target_date" class="form-label">Target Date (optional)</label>
+                        <input type="date" name="target_date" id="id_target_date" class="form-control">
+                        {% if form.target_date.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.target_date.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Set Goal</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Tips for Setting Effective Goals</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Be specific about what you want to achieve
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Make your goals measurable
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Set realistic but challenging targets
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Include a timeframe for achievement
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Break down big goals into smaller milestones
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Save Goal</button>
-</form>
+</div>
 {% endblock %} 

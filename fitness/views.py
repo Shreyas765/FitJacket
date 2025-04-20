@@ -3,9 +3,22 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.generic import ListView
-from .models import CustomUser, Goal, Workout, CoachSuggestion
-from .forms import GoalForm, WorkoutForm, UserRegistrationForm, CoachFeedbackForm, CoachSuggestionForm
+from django.views.generic import ListView, DetailView
+from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
+from django.urls import reverse_lazy
+from django.db.models import Sum, Count, Avg
+from django.http import JsonResponse
+from django.utils import timezone
+from .models import (
+    CustomUser, Goal, Workout, WorkoutPlan, WorkoutPlanExercise,
+    Challenge, ChallengeParticipation, Achievement, UserAchievement,
+    AICoachingSession, ProgressStats, Location, CoachSuggestion
+)
+from .forms import (
+    UserRegistrationForm, GoalForm, WorkoutForm, WorkoutPlanForm,
+    WorkoutPlanExerciseForm, ChallengeForm, ProgressStatsForm,
+    LocationForm, AICoachingForm, CustomPasswordResetForm
+)
 
 def home(request):
     if request.user.is_authenticated:
@@ -14,7 +27,7 @@ def home(request):
 
 def register(request):
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
+        form = UserRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             login(request, user)
@@ -45,11 +58,25 @@ def dashboard(request):
     goals = Goal.objects.filter(user=request.user)
     workouts = Workout.objects.filter(user=request.user)
     suggestions = CoachSuggestion.objects.filter(user=request.user).order_by('-created_at')
+    challenges = ChallengeParticipation.objects.filter(user=request.user)
+    achievements = UserAchievement.objects.filter(user=request.user)
+    progress_stats = ProgressStats.objects.filter(user=request.user).order_by('-date')[:5]
+    
+    # Calculate statistics
+    total_workouts = workouts.count()
+    total_calories = workouts.aggregate(total=Sum('calories_burned'))['total'] or 0
+    avg_duration = workouts.aggregate(avg=Avg('duration'))['avg'] or 0
     
     return render(request, 'fitness/dashboard.html', {
         'goals': goals,
         'workouts': workouts,
-        'suggestions': suggestions
+        'suggestions': suggestions,
+        'challenges': challenges,
+        'achievements': achievements,
+        'progress_stats': progress_stats,
+        'total_workouts': total_workouts,
+        'total_calories': total_calories,
+        'avg_duration': avg_duration
     })
 
 @login_required
@@ -58,8 +85,13 @@ def coach_dashboard(request):
         return redirect('dashboard')
     
     users = CustomUser.objects.filter(user_type='user')
+    workout_plans = WorkoutPlan.objects.filter(coach=request.user)
+    challenges = Challenge.objects.filter(created_by=request.user)
+    
     return render(request, 'fitness/coach_dashboard.html', {
-        'users': users
+        'users': users,
+        'workout_plans': workout_plans,
+        'challenges': challenges
     })
 
 @login_required
@@ -145,3 +177,182 @@ def mark_suggestion_read(request, suggestion_id):
     suggestion.is_read = True
     suggestion.save()
     return redirect('dashboard')
+
+@login_required
+def create_workout_plan(request, user_id):
+    if request.user.user_type != 'coach':
+        return redirect('dashboard')
+    
+    user = get_object_or_404(CustomUser, id=user_id)
+    
+    if request.method == 'POST':
+        plan_form = WorkoutPlanForm(request.POST)
+        if plan_form.is_valid():
+            plan = plan_form.save(commit=False)
+            plan.coach = request.user
+            plan.user = user
+            plan.save()
+            return redirect('workout_plan_detail', plan_id=plan.id)
+    else:
+        plan_form = WorkoutPlanForm()
+    
+    return render(request, 'fitness/create_workout_plan.html', {
+        'plan_form': plan_form,
+        'user': user
+    })
+
+@login_required
+def workout_plan_detail(request, plan_id):
+    plan = get_object_or_404(WorkoutPlan, id=plan_id)
+    exercises = WorkoutPlanExercise.objects.filter(plan=plan)
+    
+    if request.method == 'POST' and request.user.user_type == 'coach':
+        exercise_form = WorkoutPlanExerciseForm(request.POST)
+        if exercise_form.is_valid():
+            exercise = exercise_form.save(commit=False)
+            exercise.plan = plan
+            exercise.save()
+            return redirect('workout_plan_detail', plan_id=plan.id)
+    else:
+        exercise_form = WorkoutPlanExerciseForm()
+    
+    return render(request, 'fitness/workout_plan_detail.html', {
+        'plan': plan,
+        'exercises': exercises,
+        'exercise_form': exercise_form
+    })
+
+@login_required
+def create_challenge(request):
+    if request.method == 'POST':
+        form = ChallengeForm(request.POST)
+        if form.is_valid():
+            challenge = form.save(commit=False)
+            challenge.created_by = request.user
+            challenge.save()
+            return redirect('challenge_detail', challenge_id=challenge.id)
+    else:
+        form = ChallengeForm()
+    return render(request, 'fitness/create_challenge.html', {'form': form})
+
+@login_required
+def challenge_detail(request, challenge_id):
+    challenge = get_object_or_404(Challenge, id=challenge_id)
+    participants = ChallengeParticipation.objects.filter(challenge=challenge).order_by('-points')
+    is_participant = ChallengeParticipation.objects.filter(challenge=challenge, user=request.user).exists()
+    
+    if request.method == 'POST' and not is_participant:
+        ChallengeParticipation.objects.create(challenge=challenge, user=request.user)
+        return redirect('challenge_detail', challenge_id=challenge.id)
+    
+    return render(request, 'fitness/challenge_detail.html', {
+        'challenge': challenge,
+        'participants': participants,
+        'is_participant': is_participant
+    })
+
+@login_required
+def log_progress(request):
+    if request.method == 'POST':
+        form = ProgressStatsForm(request.POST)
+        if form.is_valid():
+            progress = form.save(commit=False)
+            progress.user = request.user
+            progress.save()
+            return redirect('dashboard')
+    else:
+        form = ProgressStatsForm()
+    return render(request, 'fitness/log_progress.html', {'form': form})
+
+@login_required
+def nearby_locations(request):
+    locations = Location.objects.all()
+    return render(request, 'fitness/nearby_locations.html', {'locations': locations})
+
+@login_required
+def ai_coaching(request):
+    if request.method == 'POST':
+        form = AICoachingForm(request.POST)
+        if form.is_valid():
+            session = form.save(commit=False)
+            session.user = request.user
+            # Here you would integrate with your AI coaching API
+            # For now, we'll just save the question
+            session.response = "This is a placeholder response. AI integration coming soon!"
+            session.save()
+            return redirect('ai_coaching_history')
+    else:
+        form = AICoachingForm()
+    
+    return render(request, 'fitness/ai_coaching.html', {'form': form})
+
+@login_required
+def ai_coaching_history(request):
+    sessions = AICoachingSession.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'fitness/ai_coaching_history.html', {'sessions': sessions})
+
+@login_required
+def achievements(request):
+    completed_goals_count = request.user.goal_set.filter(is_completed=True).count()
+    return render(request, 'fitness/achievements.html', {
+        'completed_goals_count': completed_goals_count
+    })
+
+@login_required
+def friends(request):
+    # Get current user's friends
+    friends = request.user.friends.all()
+    
+    # Get all users except current user and existing friends
+    other_users = CustomUser.objects.exclude(id=request.user.id).exclude(id__in=friends.values_list('id', flat=True))
+    
+    return render(request, 'fitness/friends.html', {
+        'friends': friends,
+        'other_users': other_users
+    })
+
+@login_required
+def add_friend(request, user_id):
+    friend = get_object_or_404(CustomUser, id=user_id)
+    
+    # Add friend relationship
+    request.user.friends.add(friend)
+    friend.friends.add(request.user)  # Make it mutual
+    
+    return redirect('friends')
+
+class CustomPasswordResetView(PasswordResetView):
+    form_class = CustomPasswordResetForm
+    template_name = 'fitness/password_reset.html'
+    email_template_name = 'fitness/password_reset_email.html'
+    success_url = reverse_lazy('password_reset_done')
+
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'fitness/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+@login_required
+def profile(request):
+    user = request.user
+    goals = Goal.objects.filter(user=user)
+    workouts = Workout.objects.filter(user=user)
+    achievements = UserAchievement.objects.filter(user=user)
+    progress_stats = ProgressStats.objects.filter(user=user).order_by('-date')[:5]
+    
+    return render(request, 'fitness/profile.html', {
+        'user': user,
+        'goals': goals,
+        'workouts': workouts,
+        'achievements': achievements,
+        'progress_stats': progress_stats
+    })
+
+@login_required
+def challenges(request):
+    active_challenges = Challenge.objects.filter(end_date__gt=timezone.now())
+    my_challenges = ChallengeParticipation.objects.filter(user=request.user)
+    
+    return render(request, 'fitness/challenges.html', {
+        'active_challenges': active_challenges,
+        'my_challenges': my_challenges
+    })

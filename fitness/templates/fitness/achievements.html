@@ -1,0 +1,204 @@
+{% extends 'fitness/base.html' %}
+{% load fitness_tags %}
+
+{% block title %}Achievements - FitJacket{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Your Achievements</h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Workout Achievements -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Workout Achievements</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">First Workout</h6>
+                                <small class="text-muted">Complete your first workout</small>
+                            </div>
+                            {% if user.workout_set.count > 0 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">In Progress</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Workout Streak</h6>
+                                <small class="text-muted">Work out for 7 days in a row</small>
+                            </div>
+                            {% if user.workout_streak >= 7 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ user.workout_streak }}/7 days</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Workout Master</h6>
+                                <small class="text-muted">Complete 50 workouts</small>
+                            </div>
+                            {% if user.workout_set.count >= 50 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ user.workout_set.count }}/50 workouts</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goal Achievements -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Goal Achievements</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Goal Setter</h6>
+                                <small class="text-muted">Set your first fitness goal</small>
+                            </div>
+                            {% if user.goal_set.count > 0 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">In Progress</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Goal Achiever</h6>
+                                <small class="text-muted">Complete 5 goals</small>
+                            </div>
+                            {% if completed_goals_count >= 5 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ completed_goals_count }}/5 goals</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Consistent Progress</h6>
+                                <small class="text-muted">Log progress for 30 days</small>
+                            </div>
+                            {% if user.progress_set.count >= 30 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ user.progress_set.count }}/30 days</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Social Achievements -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Social Achievements</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Social Butterfly</h6>
+                                <small class="text-muted">Add 5 friends</small>
+                            </div>
+                            {% if user.friends.count >= 5 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ user.friends.count }}/5 friends</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Challenge Champion</h6>
+                                <small class="text-muted">Complete 3 challenges</small>
+                            </div>
+                            {% if user.challenge_set.filter(completed=True).count >= 3 %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ user.challenge_set.filter(completed=True).count }}/3 challenges</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Special Achievements -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Special Achievements</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Early Bird</h6>
+                                <small class="text-muted">Complete a workout before 7 AM</small>
+                            </div>
+                            {% if user.workout_set.filter(time__hour__lt=7).exists %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">In Progress</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Weekend Warrior</h6>
+                                <small class="text-muted">Work out on both Saturday and Sunday</small>
+                            </div>
+                            {% if user.has_weekend_workout %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">In Progress</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

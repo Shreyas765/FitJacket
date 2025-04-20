@@ -1,0 +1,114 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Log Progress - FitJacket{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Log Your Progress</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Please correct the errors below.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_date" class="form-label">Date</label>
+                            <input type="date" name="date" id="id_date" class="form-control" required>
+                            {% if form.date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.date.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_weight" class="form-label">Weight (kg)</label>
+                            <input type="number" name="weight" id="id_weight" class="form-control" step="0.1" min="0">
+                            {% if form.weight.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.weight.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_body_fat_percentage" class="form-label">Body Fat Percentage</label>
+                            <input type="number" name="body_fat_percentage" id="id_body_fat_percentage" class="form-control" step="0.1" min="0" max="100">
+                            {% if form.body_fat_percentage.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.body_fat_percentage.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_muscle_mass" class="form-label">Muscle Mass (kg)</label>
+                            <input type="number" name="muscle_mass" id="id_muscle_mass" class="form-control" step="0.1" min="0">
+                            {% if form.muscle_mass.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.muscle_mass.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_notes" class="form-label">Notes</label>
+                        <textarea name="notes" id="id_notes" class="form-control" rows="3" 
+                                  placeholder="Add any additional notes about your progress..."></textarea>
+                        {% if form.notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.notes.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Save Progress</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Progress Tracking Tips</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Measure at the same time of day for consistency
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Take measurements weekly or bi-weekly
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Include photos for visual progress tracking
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Note any changes in energy levels or mood
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Celebrate small victories along the way
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

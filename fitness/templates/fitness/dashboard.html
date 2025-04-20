@@ -1,87 +1,199 @@
 {% extends 'fitness/base.html' %}
 
-{% block content %}
-<h1 class="mb-4">Dashboard</h1>
+{% block title %}Dashboard - FitJacket{% endblock %}
 
+{% block content %}
 <div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
+    <!-- Stats Overview -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
             <div class="card-header">
-                <h2>Your Goals</h2>
+                <h5 class="mb-0">Your Fitness Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-number">{{ total_workouts }}</div>
+                            <div class="stats-label">Total Workouts</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-number">{{ total_calories }}</div>
+                            <div class="stats-label">Calories Burned</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-number">{{ avg_duration|floatformat:0 }} min</div>
+                            <div class="stats-label">Avg. Workout Duration</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Your Goals</h5>
+                <a href="{% url 'set_goal' %}" class="btn btn-sm btn-primary">Set New Goal</a>
             </div>
             <div class="card-body">
                 {% if goals %}
                     <div class="list-group">
                         {% for goal in goals %}
                             <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">{{ goal.description }}</h5>
-                                    <small>{{ goal.created_at|date:"M d, Y" }}</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1">{{ goal.description }}</h6>
+                                    <span class="badge {% if goal.is_completed %}bg-success{% else %}bg-warning{% endif %}">
+                                        {% if goal.is_completed %}Completed{% else %}In Progress{% endif %}
+                                    </span>
                                 </div>
+                                {% if goal.target_date %}
+                                    <small class="text-muted">Target Date: {{ goal.target_date }}</small>
+                                {% endif %}
                                 {% if goal.coach_feedback %}
-                                    <p class="mb-1"><strong>Coach Feedback:</strong> {{ goal.coach_feedback }}</p>
+                                    <div class="mt-2">
+                                        <small class="text-muted">Coach's Feedback:</small>
+                                        <p class="mb-0">{{ goal.coach_feedback }}</p>
+                                    </div>
                                 {% endif %}
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p>No goals set yet. <a href="{% url 'set_goal' %}">Set a goal</a></p>
+                    <p class="text-muted">No goals set yet. Set your first goal to get started!</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h2>Workout History</h2>
+    <!-- Recent Workouts -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Workouts</h5>
+                <a href="{% url 'log_workout' %}" class="btn btn-sm btn-primary">Log Workout</a>
             </div>
             <div class="card-body">
                 {% if workouts %}
                     <div class="list-group">
-                        {% for workout in workouts %}
+                        {% for workout in workouts|slice:":5" %}
                             <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">{{ workout.description }}</h5>
-                                    <small>{{ workout.created_at|date:"M d, Y" }}</small>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1">{{ workout.workout_type|title }}</h6>
+                                    <small class="text-muted">{{ workout.created_at|date:"M d, Y" }}</small>
                                 </div>
-                                {% if workout.coach_feedback %}
-                                    <p class="mb-1"><strong>Coach Feedback:</strong> {{ workout.coach_feedback }}</p>
-                                {% endif %}
+                                <p class="mb-1">{{ workout.description }}</p>
+                                <small class="text-muted">
+                                    Duration: {{ workout.duration }} min
+                                    {% if workout.calories_burned %}
+                                        | Calories: {{ workout.calories_burned }}
+                                    {% endif %}
+                                </small>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p>No workouts logged yet. <a href="{% url 'log_workout' %}">Log a workout</a></p>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h2>Coach Suggestions</h2>
-            </div>
-            <div class="card-body">
-                {% if suggestions %}
-                    <div class="list-group">
-                        {% for suggestion in suggestions %}
-                            <div class="list-group-item {% if not suggestion.is_read %}list-group-item-info{% endif %}">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">From: {{ suggestion.coach.username }}</h5>
-                                    <small>{{ suggestion.created_at|date:"M d, Y" }}</small>
-                                </div>
-                                <p class="mb-1">{{ suggestion.content }}</p>
-                                {% if not suggestion.is_read %}
-                                    <a href="{% url 'mark_suggestion_read' suggestion.id %}" class="btn btn-sm btn-outline-primary mt-2">Mark as Read</a>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p>No suggestions from your coach yet.</p>
+                    <p class="text-muted">No workouts logged yet. Start tracking your fitness journey!</p>
                 {% endif %}
             </div>
         </div>
     </div>
+
+    <!-- Progress Stats -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Progress Stats</h5>
+                <a href="{% url 'log_progress' %}" class="btn btn-sm btn-primary">Log Progress</a>
+            </div>
+            <div class="card-body">
+                {% if progress_stats %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Weight</th>
+                                    <th>Body Fat %</th>
+                                    <th>Muscle Mass</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in progress_stats %}
+                                    <tr>
+                                        <td>{{ stat.date|date:"M d, Y" }}</td>
+                                        <td>{{ stat.weight|default:"-" }} kg</td>
+                                        <td>{{ stat.body_fat_percentage|default:"-" }}%</td>
+                                        <td>{{ stat.muscle_mass|default:"-" }} kg</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No progress stats recorded yet. Start tracking your progress!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Achievements -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Recent Achievements</h5>
+            </div>
+            <div class="card-body">
+                {% if achievements %}
+                    <div class="row">
+                        {% for achievement in achievements|slice:":4" %}
+                            <div class="col-md-6 mb-3">
+                                <div class="text-center">
+                                    <img src="{{ achievement.achievement.badge_image.url }}" 
+                                         alt="{{ achievement.achievement.name }}"
+                                         class="img-fluid mb-2"
+                                         style="max-width: 100px;">
+                                    <h6>{{ achievement.achievement.name }}</h6>
+                                    <small class="text-muted">{{ achievement.earned_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No achievements earned yet. Keep working towards your goals!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Coach Suggestions -->
+    {% if suggestions %}
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Coach Suggestions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for suggestion in suggestions|slice:":3" %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1">From: {{ suggestion.coach.username }}</h6>
+                                    <small class="text-muted">{{ suggestion.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-0">{{ suggestion.content }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %} 

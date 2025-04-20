@@ -1,0 +1,110 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Challenges - FitJacket{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Fitness Challenges</h2>
+            {% if user.user_type == 'coach' %}
+                <a href="{% url 'create_challenge' %}" class="btn btn-primary">Create Challenge</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Active Challenges -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Active Challenges</h5>
+            </div>
+            <div class="card-body">
+                {% if active_challenges %}
+                    <div class="list-group">
+                        {% for challenge in active_challenges %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-1">{{ challenge.name }}</h5>
+                                    <span class="badge bg-primary">{{ challenge.participants.count }} Participants</span>
+                                </div>
+                                <p class="mb-1">{{ challenge.description }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        Created by: {{ challenge.created_by.username }}
+                                    </small>
+                                    <div>
+                                        <small class="text-muted me-3">
+                                            Ends: {{ challenge.end_date|date:"M d, Y" }}
+                                        </small>
+                                        <a href="{% url 'challenge_detail' challenge.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No active challenges at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- My Challenges -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">My Challenges</h5>
+            </div>
+            <div class="card-body">
+                {% if my_challenges %}
+                    <div class="list-group">
+                        {% for participation in my_challenges %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1">{{ participation.challenge.name }}</h6>
+                                    <span class="badge bg-success">{{ participation.points }} Points</span>
+                                </div>
+                                <small class="text-muted">Joined: {{ participation.joined_at|date:"M d, Y" }}</small>
+                                <div class="mt-2">
+                                    <a href="{% url 'challenge_detail' participation.challenge.id %}" class="btn btn-sm btn-outline-primary">View Progress</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">You haven't joined any challenges yet.</p>
+                    <div class="text-center">
+                        <p>Join a challenge to compete with other users and earn achievements!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Challenge Tips -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Challenge Tips</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Join challenges that match your fitness level
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Stay consistent with your workouts
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Track your progress regularly
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        Support and encourage other participants
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
