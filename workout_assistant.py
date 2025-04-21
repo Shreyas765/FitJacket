@@ -10,7 +10,7 @@ class WorkoutData:
 
 def get_workout_tip(workout_data: WorkoutData) -> str:
     client = Groq(
-        api_key="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"
+        api_key=os.environ.get("GROQ_API_KEY")
     )
     
     # Format the workout data into a clear prompt
