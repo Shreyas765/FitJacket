@@ -19,7 +19,15 @@ from .forms import (
     WorkoutPlanExerciseForm, ChallengeForm, ProgressStatsForm,
     LocationForm, AICoachingForm, CustomPasswordResetForm
 )
-from workout_assistant import WorkoutData, get_workout_tip
+
+# Make workout assistant optional
+try:
+    from workout_assistant import WorkoutData, get_workout_tip
+    WORKOUT_ASSISTANT_AVAILABLE = True
+except ImportError:
+    WORKOUT_ASSISTANT_AVAILABLE = False
+    def get_workout_tip(workout_data):
+        return "Keep up the great work! Remember to stay hydrated and maintain proper form during your workouts."
 
 def home(request):
     if request.user.is_authenticated:
@@ -68,19 +76,22 @@ def dashboard(request):
     total_calories = workouts.aggregate(total=Sum('calories_burned'))['total'] or 0
     avg_duration = workouts.aggregate(avg=Avg('duration'))['avg'] or 0
 
-    # Get last 3 workouts for the tip
-    last_workouts = workouts.order_by('-created_at')[:3]
-    workout_data = WorkoutData(
-        goals=[goal.description for goal in goals],
-        progress=progress_stats.first().description if progress_stats else "",
-        last_workouts=[{
-            "date": workout.created_at.strftime("%Y-%m-%d"),
-            "type": workout.workout_type,
-            "duration": workout.duration
-        } for workout in last_workouts]
-    )
-    
-    workout_tip = get_workout_tip(workout_data)
+    # Get workout tip
+    if WORKOUT_ASSISTANT_AVAILABLE:
+        # Get last 3 workouts for the tip
+        last_workouts = workouts.order_by('-created_at')[:3]
+        workout_data = WorkoutData(
+            goals=", ".join([goal.description for goal in goals]),
+            progress=progress_stats.first().description if progress_stats else "",
+            last_workouts=[{
+                "date": workout.created_at.strftime("%Y-%m-%d"),
+                "type": workout.workout_type,
+                "duration": workout.duration
+            } for workout in last_workouts]
+        )
+        workout_tip = get_workout_tip(workout_data)
+    else:
+        workout_tip = "Keep up the great work! Remember to stay hydrated and maintain proper form during your workouts."
     
     return render(request, 'fitness/dashboard.html', {
         'goals': goals,
@@ -375,23 +386,37 @@ def challenges(request):
 
 @login_required
 def get_workout_tip_ajax(request):
-    if request.method == 'POST':
-        goals = Goal.objects.filter(user=request.user)
-        workouts = Workout.objects.filter(user=request.user)
-        progress_stats = ProgressStats.objects.filter(user=request.user).order_by('-date')[:1]
-        
-        last_workouts = workouts.order_by('-created_at')[:3]
-        workout_data = WorkoutData(
-            goals=[goal.description for goal in goals],
-            progress=progress_stats.first().description if progress_stats else "",
-            last_workouts=[{
-                "date": workout.created_at.strftime("%Y-%m-%d"),
-                "type": workout.workout_type,
-                "duration": workout.duration
-            } for workout in last_workouts]
-        )
-        
-        tip = get_workout_tip(workout_data)
-        return JsonResponse({'tip': tip})
+    if not WORKOUT_ASSISTANT_AVAILABLE:
+        return JsonResponse({
+            'tip': "Keep up the great work! Remember to stay hydrated and maintain proper form during your workouts.",
+            'source': 'default'
+        })
     
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+    # Get user's recent data
+    goals = Goal.objects.filter(user=request.user, is_completed=False)
+    progress = ProgressStats.objects.filter(user=request.user).order_by('-date')[:5]
+    last_workouts = Workout.objects.filter(user=request.user).order_by('-date')[:3]
+    
+    # Format the data
+    goals_text = ", ".join([goal.description for goal in goals])
+    progress_text = ", ".join([f"{stat.metric}: {stat.value}" for stat in progress])
+    workouts_data = [{
+        'date': workout.date.strftime('%Y-%m-%d'),
+        'type': workout.workout_type,
+        'duration': f"{workout.duration} min"
+    } for workout in last_workouts]
+    
+    # Create workout data object
+    workout_data = WorkoutData(
+        goals=goals_text,
+        progress=progress_text,
+        last_workouts=workouts_data
+    )
+    
+    # Get the tip
+    tip = get_workout_tip(workout_data)
+    
+    return JsonResponse({
+        'tip': tip,
+        'source': 'ai'
+    })

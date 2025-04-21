@@ -1,12 +1,132 @@
 {% extends 'fitness/base.html' %}
+{% load static %}
+
+{% block title %}FitJacket - Your Personal Fitness Journey{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h1 class="mb-4">Welcome to FitJacket</h1>
-    <p class="lead mb-4">Your personal fitness tracking companion</p>
-    <div class="d-grid gap-2 col-6 mx-auto">
-        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Login</a>
-        <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg">Register</a>
+<!-- Hero Section -->
+<div class="hero-section text-white py-5" style="background: linear-gradient(135deg, #007bff, #00b4d8);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Transform Your Fitness Journey</h1>
+                <p class="lead mb-4">Track workouts, set goals, and achieve your fitness dreams with FitJacket. Your personal fitness companion for a healthier, stronger you.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4">Get Started</a>
+                    <a href="#features" class="btn btn-outline-light btn-lg px-4">Learn More</a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{% static 'fitness/tech.jpg' %}" 
+                     alt="Georgia Tech Campus" class="img-fluid rounded shadow-lg">
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- Features Section -->
+<section id="features" class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Why Choose FitJacket?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-graph-up-arrow fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="h5">Track Progress</h3>
+                        <p class="text-muted">Monitor your fitness journey with detailed statistics and progress tracking.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-people fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="h5">Social Support</h3>
+                        <p class="text-muted">Connect with friends, join challenges, and stay motivated together.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-robot fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="h5">AI Coaching</h3>
+                        <p class="text-muted">Get personalized workout suggestions and fitness advice from our AI coach.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">What Our Users Say</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://randomuser.me/api/portraits/women/32.jpg" 
+                                 alt="User" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            <div>
+                                <h5 class="mb-0">Sarah Johnson</h5>
+                                <small class="text-muted">Fitness Enthusiast</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">"FitJacket has completely transformed my fitness routine. The progress tracking and social features keep me motivated!"</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://randomuser.me/api/portraits/men/45.jpg" 
+                                 alt="User" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            <div>
+                                <h5 class="mb-0">Michael Chen</h5>
+                                <small class="text-muted">Personal Trainer</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">"As a trainer, I love how FitJacket helps my clients stay on track with their goals. The AI coaching is surprisingly helpful!"</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" 
+                                 alt="User" class="rounded-circle me-3" style="width: 50px; height: 50px;">
+                            <div>
+                                <h5 class="mb-0">Emily Rodriguez</h5>
+                                <small class="text-muted">Yoga Instructor</small>
+                            </div>
+                        </div>
+                        <p class="mb-0">"The community aspect of FitJacket is amazing. I've made so many fitness friends and we keep each other accountable."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #00b4d8, #007bff);">
+    <div class="container text-center text-white">
+        <h2 class="mb-4">Ready to Start Your Fitness Journey?</h2>
+        <p class="lead mb-4">Join other jackets who are transforming their lives with FitJacket!</p>
+        <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5">Get Started Now</a>
+    </div>
+</section>
+
 {% endblock %} 
