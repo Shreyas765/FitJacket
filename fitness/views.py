@@ -19,6 +19,7 @@ from .forms import (
     WorkoutPlanExerciseForm, ChallengeForm, ProgressStatsForm,
     LocationForm, AICoachingForm, CustomPasswordResetForm
 )
+from django.contrib import messages
 
 # Make workout assistant optional
 try:
@@ -347,6 +348,37 @@ def add_friend(request, user_id):
     friend.friends.add(request.user)  # Make it mutual
     
     return redirect('friends')
+
+@login_required
+def remove_friend(request, user_id):
+    friend = get_object_or_404(CustomUser, id=user_id)
+    request.user.friends.remove(friend)
+    friend.friends.remove(request.user)  # Remove mutual friendship
+    return redirect('friends')
+
+@login_required
+def delete_goal(request, goal_id):
+    goal = get_object_or_404(Goal, id=goal_id, user=request.user)
+    if request.method == 'POST':
+        goal.delete()
+        messages.success(request, 'Goal deleted successfully.')
+    return redirect('dashboard')
+
+@login_required
+def delete_progress(request, progress_id):
+    progress = get_object_or_404(ProgressStats, id=progress_id, user=request.user)
+    if request.method == 'POST':
+        progress.delete()
+        messages.success(request, 'Progress entry deleted successfully.')
+    return redirect('dashboard')
+
+@login_required
+def delete_workout(request, workout_id):
+    workout = get_object_or_404(Workout, id=workout_id, user=request.user)
+    if request.method == 'POST':
+        workout.delete()
+        messages.success(request, 'Workout deleted successfully.')
+    return redirect('dashboard')
 
 class CustomPasswordResetView(PasswordResetView):
     form_class = CustomPasswordResetForm

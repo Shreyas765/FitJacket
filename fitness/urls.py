@@ -36,7 +36,11 @@ urlpatterns = [
     
     # Social URLs
     path('friends/', views.friends, name='friends'),
-    path('add-friend/<int:user_id>/', views.add_friend, name='add_friend'),
+    path('add_friend/<int:user_id>/', views.add_friend, name='add_friend'),
+    path('remove_friend/<int:user_id>/', views.remove_friend, name='remove_friend'),
+    path('delete_goal/<int:goal_id>/', views.delete_goal, name='delete_goal'),
+    path('delete_progress/<int:progress_id>/', views.delete_progress, name='delete_progress'),
+    path('delete_workout/<int:workout_id>/', views.delete_workout, name='delete_workout'),
     
     # Achievement URLs
     path('achievements/', views.achievements, name='achievements'),

@@ -58,34 +58,30 @@
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Your Goals</h5>
-                <a href="{% url 'set_goal' %}" class="btn btn-sm btn-primary">Set New Goal</a>
+                <h5 class="mb-0">My Goals</h5>
+                <a href="{% url 'set_goal' %}" class="btn btn-primary btn-sm">Set New Goal</a>
             </div>
             <div class="card-body">
                 {% if goals %}
-                    <div class="list-group">
+                    <ul class="list-group">
                         {% for goal in goals %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">{{ goal.description }}</h6>
-                                    <span class="badge {% if goal.is_completed %}bg-success{% else %}bg-warning{% endif %}">
-                                        {% if goal.is_completed %}Completed{% else %}In Progress{% endif %}
-                                    </span>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ goal.description }}</strong>
+                                    <br>
+                                    <small class="text-muted">Target Date: {{ goal.target_date|date:"F d, Y" }}</small>
                                 </div>
-                                {% if goal.target_date %}
-                                    <small class="text-muted">Target Date: {{ goal.target_date }}</small>
-                                {% endif %}
-                                {% if goal.coach_feedback %}
-                                    <div class="mt-2">
-                                        <small class="text-muted">Coach's Feedback:</small>
-                                        <p class="mb-0">{{ goal.coach_feedback }}</p>
-                                    </div>
-                                {% endif %}
-                            </div>
+                                <form method="post" action="{% url 'delete_goal' goal.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this goal?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
                         {% endfor %}
-                    </div>
+                    </ul>
                 {% else %}
-                    <p class="text-muted">No goals set yet. Set your first goal to get started!</p>
+                    <p class="text-muted">No goals set yet.</p>
                 {% endif %}
             </div>
         </div>
@@ -96,27 +92,32 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Recent Workouts</h5>
-                <a href="{% url 'log_workout' %}" class="btn btn-sm btn-primary">Log Workout</a>
+                <a href="{% url 'log_workout' %}" class="btn btn-primary btn-sm">Log Workout</a>
             </div>
             <div class="card-body">
                 {% if workouts %}
-                    <div class="list-group">
+                    <ul class="list-group">
                         {% for workout in workouts|slice:":5" %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">{{ workout.workout_type|title }}</h6>
-                                    <small class="text-muted">{{ workout.created_at|date:"M d, Y" }}</small>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ workout.workout_type }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Duration: {{ workout.duration }} minutes
+                                        {% if workout.calories_burned %}
+                                            | Calories: {{ workout.calories_burned }}
+                                        {% endif %}
+                                    </small>
                                 </div>
-                                <p class="mb-1">{{ workout.description }}</p>
-                                <small class="text-muted">
-                                    Duration: {{ workout.duration }} min
-                                    {% if workout.calories_burned %}
-                                        | Calories: {{ workout.calories_burned }}
-                                    {% endif %}
-                                </small>
-                            </div>
+                                <form method="post" action="{% url 'delete_workout' workout.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this workout?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
                         {% endfor %}
-                    </div>
+                    </ul>
                 {% else %}
                     <p class="text-muted">No workouts logged yet. Start tracking your fitness journey!</p>
                 {% endif %}
@@ -128,35 +129,30 @@
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Progress Stats</h5>
-                <a href="{% url 'log_progress' %}" class="btn btn-sm btn-primary">Log Progress</a>
+                <h5 class="mb-0">Progress Checks</h5>
+                <a href="{% url 'log_progress' %}" class="btn btn-primary btn-sm">Log Progress</a>
             </div>
             <div class="card-body">
-                {% if progress_stats %}
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Weight</th>
-                                    <th>Body Fat %</th>
-                                    <th>Muscle Mass</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for stat in progress_stats %}
-                                    <tr>
-                                        <td>{{ stat.date|date:"M d, Y" }}</td>
-                                        <td>{{ stat.weight|default:"-" }} kg</td>
-                                        <td>{{ stat.body_fat_percentage|default:"-" }}%</td>
-                                        <td>{{ stat.muscle_mass|default:"-" }} kg</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                {% if progress_entries %}
+                    <ul class="list-group">
+                        {% for progress in progress_entries %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Weight: {{ progress.weight }} lbs</strong>
+                                    <br>
+                                    <small class="text-muted">Date: {{ progress.date|date:"F d, Y" }}</small>
+                                </div>
+                                <form method="post" action="{% url 'delete_progress' progress.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this progress entry?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 {% else %}
-                    <p class="text-muted">No progress stats recorded yet. Start tracking your progress!</p>
+                    <p class="text-muted">No progress entries yet.</p>
                 {% endif %}
             </div>
         </div>
