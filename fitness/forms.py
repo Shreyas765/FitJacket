@@ -75,13 +75,22 @@ class WorkoutPlanExerciseForm(forms.ModelForm):
 class ChallengeForm(forms.ModelForm):
     class Meta:
         model = Challenge
-        fields = ['name', 'description', 'start_date', 'end_date']
+        fields = ['challenged', 'workout_type', 'duration', 'description', 'deadline', 'calories_target', 'location', 'notes']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-            'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'})
+            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
         }
+
+    def __init__(self, user, *args, **kwargs):
+        super(ChallengeForm, self).__init__(*args, **kwargs)
+        # Only show friends in the challenged field
+        self.fields['challenged'].queryset = user.friends.all()
+        self.fields['challenged'].label = "Challenge Friend"
+        self.fields['duration'].label = "Duration (minutes)"
+        self.fields['calories_target'].label = "Target Calories (optional)"
+        self.fields['location'].label = "Location (optional)"
+        self.fields['notes'].label = "Additional Notes (optional)"
 
 class ProgressStatsForm(forms.ModelForm):
     class Meta:

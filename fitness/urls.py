@@ -31,8 +31,8 @@ urlpatterns = [
     
     # Challenge URLs
     path('challenges/', views.challenges, name='challenges'),
-    path('create-challenge/', views.create_challenge, name='create_challenge'),
-    path('challenge/<int:challenge_id>/', views.challenge_detail, name='challenge_detail'),
+    path('challenges/create/', views.create_challenge, name='create_challenge'),
+    path('challenges/<int:challenge_id>/', views.challenge_detail, name='challenge_detail'),
     
     # Social URLs
     path('friends/', views.friends, name='friends'),

@@ -1,0 +1,97 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Challenge Details - FitJacket{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Challenge Details</h4>
+                        <span class="badge bg-{{ challenge.status|default:'secondary' }}">
+                            {{ challenge.status|title }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Challenge Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Challenger:</strong> {{ challenge.challenger.username }}</p>
+                                <p><strong>Challenged:</strong> {{ challenge.challenged.username }}</p>
+                                <p><strong>Workout Type:</strong> {{ challenge.workout_type }}</p>
+                                <p><strong>Duration:</strong> {{ challenge.duration }} minutes</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Deadline:</strong> {{ challenge.deadline|date:"F d, Y H:i" }}</p>
+                                {% if challenge.calories_target %}
+                                    <p><strong>Target Calories:</strong> {{ challenge.calories_target }}</p>
+                                {% endif %}
+                                {% if challenge.location %}
+                                    <p><strong>Location:</strong> {{ challenge.location }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if challenge.description %}
+                        <div class="mb-4">
+                            <h5>Description</h5>
+                            <p>{{ challenge.description }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if challenge.notes %}
+                        <div class="mb-4">
+                            <h5>Additional Notes</h5>
+                            <p>{{ challenge.notes }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h5>Challenge Status</h5>
+                        <p>Created: {{ challenge.created_at|date:"F d, Y H:i" }}</p>
+                        {% if challenge.completed_at %}
+                            <p>Completed: {{ challenge.completed_at|date:"F d, Y H:i" }}</p>
+                        {% endif %}
+                    </div>
+
+                    {% if challenge.status == 'pending' and request.user == challenge.challenged %}
+                        <div class="alert alert-info">
+                            <h5>Action Required</h5>
+                            <p>You have been challenged to complete this workout. Please accept or decline the challenge.</p>
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" name="action" value="accept" class="btn btn-success">
+                                    Accept Challenge
+                                </button>
+                                <button type="submit" name="action" value="decline" class="btn btn-danger">
+                                    Decline Challenge
+                                </button>
+                            </form>
+                        </div>
+                    {% elif challenge.status == 'accepted' and request.user == challenge.challenged %}
+                        <div class="alert alert-warning">
+                            <h5>Challenge Accepted</h5>
+                            <p>You have accepted this challenge. Complete it before the deadline!</p>
+                            <form method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" name="action" value="complete" class="btn btn-primary">
+                                    Mark as Completed
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'challenges' %}" class="btn btn-secondary">Back to Challenges</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

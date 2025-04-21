@@ -253,30 +253,59 @@ def workout_plan_detail(request, plan_id):
 @login_required
 def create_challenge(request):
     if request.method == 'POST':
-        form = ChallengeForm(request.POST)
+        form = ChallengeForm(request.user, request.POST)
         if form.is_valid():
             challenge = form.save(commit=False)
-            challenge.created_by = request.user
+            challenge.challenger = request.user
             challenge.save()
-            return redirect('challenge_detail', challenge_id=challenge.id)
+            messages.success(request, 'Challenge created successfully!')
+            return redirect('challenges')
     else:
-        form = ChallengeForm()
-    return render(request, 'fitness/create_challenge.html', {'form': form})
+        form = ChallengeForm(request.user)
+    
+    return render(request, 'fitness/create_challenge.html', {
+        'form': form,
+        'title': 'Create Challenge'
+    })
 
 @login_required
 def challenge_detail(request, challenge_id):
     challenge = get_object_or_404(Challenge, id=challenge_id)
-    participants = ChallengeParticipation.objects.filter(challenge=challenge).order_by('-points')
-    is_participant = ChallengeParticipation.objects.filter(challenge=challenge, user=request.user).exists()
+    if request.user != challenge.challenger and request.user != challenge.challenged:
+        raise Http404("Challenge not found")
     
-    if request.method == 'POST' and not is_participant:
-        ChallengeParticipation.objects.create(challenge=challenge, user=request.user)
-        return redirect('challenge_detail', challenge_id=challenge.id)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'accept':
+            challenge.status = 'accepted'
+            challenge.save()
+            messages.success(request, 'Challenge accepted!')
+        elif action == 'decline':
+            challenge.status = 'declined'
+            challenge.save()
+            messages.success(request, 'Challenge declined.')
+        elif action == 'complete':
+            challenge.status = 'completed'
+            challenge.completed_at = timezone.now()
+            challenge.save()
+            messages.success(request, 'Challenge marked as completed!')
+        
+        return redirect('challenges')
     
     return render(request, 'fitness/challenge_detail.html', {
         'challenge': challenge,
-        'participants': participants,
-        'is_participant': is_participant
+        'title': 'Challenge Details'
+    })
+
+@login_required
+def challenges(request):
+    sent_challenges = Challenge.objects.filter(challenger=request.user)
+    received_challenges = Challenge.objects.filter(challenged=request.user)
+    
+    return render(request, 'fitness/challenges.html', {
+        'sent_challenges': sent_challenges,
+        'received_challenges': received_challenges,
+        'title': 'My Challenges'
     })
 
 @login_required
@@ -404,16 +433,6 @@ def profile(request):
         'workouts': workouts,
         'achievements': achievements,
         'progress_stats': progress_stats
-    })
-
-@login_required
-def challenges(request):
-    active_challenges = Challenge.objects.filter(end_date__gt=timezone.now())
-    my_challenges = ChallengeParticipation.objects.filter(user=request.user)
-    
-    return render(request, 'fitness/challenges.html', {
-        'active_challenges': active_challenges,
-        'my_challenges': my_challenges
     })
 
 @login_required

@@ -1,0 +1,107 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Create Challenge - FitJacket{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Create New Challenge</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.challenged.id_for_label }}" class="form-label">Challenge Friend</label>
+                            {{ form.challenged }}
+                            {% if form.challenged.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.challenged.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.workout_type.id_for_label }}" class="form-label">Workout Type</label>
+                            {{ form.workout_type }}
+                            {% if form.workout_type.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.workout_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.duration.id_for_label }}" class="form-label">Duration (minutes)</label>
+                            {{ form.duration }}
+                            {% if form.duration.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.duration.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.deadline.id_for_label }}" class="form-label">Deadline</label>
+                            {{ form.deadline }}
+                            {% if form.deadline.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.deadline.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.description.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.calories_target.id_for_label }}" class="form-label">Target Calories (optional)</label>
+                            {{ form.calories_target }}
+                            {% if form.calories_target.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.calories_target.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location (optional)</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.location.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Additional Notes (optional)</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.notes.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Challenge</button>
+                            <a href="{% url 'challenges' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -42,9 +42,23 @@ class WorkoutPlanAdmin(admin.ModelAdmin):
 
 @admin.register(Challenge)
 class ChallengeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'created_by', 'start_date', 'end_date')
-    list_filter = ('start_date', 'end_date')
-    search_fields = ('name', 'created_by__username')
+    list_display = ['challenger', 'challenged', 'workout_type', 'duration', 'deadline', 'status']
+    list_filter = ['status', 'workout_type', 'deadline']
+    search_fields = ['challenger__username', 'challenged__username', 'description']
+    readonly_fields = ['created_at', 'completed_at']
+    fieldsets = (
+        ('Challenge Details', {
+            'fields': ('challenger', 'challenged', 'workout_type', 'duration', 'deadline', 'status')
+        }),
+        ('Additional Information', {
+            'fields': ('description', 'calories_target', 'location', 'notes'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'completed_at'),
+            'classes': ('collapse',)
+        })
+    )
 
 @admin.register(ChallengeParticipation)
 class ChallengeParticipationAdmin(admin.ModelAdmin):

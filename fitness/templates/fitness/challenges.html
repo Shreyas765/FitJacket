@@ -1,108 +1,118 @@
 {% extends 'fitness/base.html' %}
 
-{% block title %}Challenges - FitJacket{% endblock %}
+{% block title %}My Challenges - FitJacket{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12 mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Fitness Challenges</h2>
-            {% if user.user_type == 'coach' %}
-                <a href="{% url 'create_challenge' %}" class="btn btn-primary">Create Challenge</a>
-            {% endif %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>My Challenges</h2>
+            <a href="{% url 'create_challenge' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create New Challenge
+            </a>
         </div>
     </div>
-    
-    <!-- Active Challenges -->
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Active Challenges</h5>
-            </div>
-            <div class="card-body">
-                {% if active_challenges %}
-                    <div class="list-group">
-                        {% for challenge in active_challenges %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-1">{{ challenge.name }}</h5>
-                                    <span class="badge bg-primary">{{ challenge.participants.count }} Participants</span>
-                                </div>
-                                <p class="mb-1">{{ challenge.description }}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        Created by: {{ challenge.created_by.username }}
-                                    </small>
-                                    <div>
-                                        <small class="text-muted me-3">
-                                            Ends: {{ challenge.end_date|date:"M d, Y" }}
-                                        </small>
-                                        <a href="{% url 'challenge_detail' challenge.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+
+    <div class="row">
+        <!-- Received Challenges -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Challenges Received</h5>
+                </div>
+                <div class="card-body">
+                    {% if received_challenges %}
+                        <div class="list-group">
+                            {% for challenge in received_challenges %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ challenge.challenger.username }} challenged you to {{ challenge.workout_type }}</h6>
+                                            <small class="text-muted">
+                                                Deadline: {{ challenge.deadline|date:"F d, Y H:i" }}
+                                                <br>
+                                                Duration: {{ challenge.duration }} minutes
+                                                {% if challenge.calories_target %}
+                                                    | Target: {{ challenge.calories_target }} calories
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-{{ challenge.status|default:'secondary' }}">
+                                            {{ challenge.status|title }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2">
+                                        {% if challenge.status == 'pending' %}
+                                            <form method="post" action="{% url 'challenge_detail' challenge.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" name="action" value="accept" class="btn btn-success btn-sm">
+                                                    Accept
+                                                </button>
+                                                <button type="submit" name="action" value="decline" class="btn btn-danger btn-sm">
+                                                    Decline
+                                                </button>
+                                            </form>
+                                        {% elif challenge.status == 'accepted' %}
+                                            <form method="post" action="{% url 'challenge_detail' challenge.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" name="action" value="complete" class="btn btn-primary btn-sm">
+                                                    Mark as Completed
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        <a href="{% url 'challenge_detail' challenge.id %}" class="btn btn-info btn-sm">
+                                            View Details
+                                        </a>
                                     </div>
                                 </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">No active challenges at the moment.</p>
-                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No challenges received yet.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- My Challenges -->
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">My Challenges</h5>
-            </div>
-            <div class="card-body">
-                {% if my_challenges %}
-                    <div class="list-group">
-                        {% for participation in my_challenges %}
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-1">{{ participation.challenge.name }}</h6>
-                                    <span class="badge bg-success">{{ participation.points }} Points</span>
+
+        <!-- Sent Challenges -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Challenges Sent</h5>
+                </div>
+                <div class="card-body">
+                    {% if sent_challenges %}
+                        <div class="list-group">
+                            {% for challenge in sent_challenges %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">You challenged {{ challenge.challenged.username }} to {{ challenge.workout_type }}</h6>
+                                            <small class="text-muted">
+                                                Deadline: {{ challenge.deadline|date:"F d, Y H:i" }}
+                                                <br>
+                                                Duration: {{ challenge.duration }} minutes
+                                                {% if challenge.calories_target %}
+                                                    | Target: {{ challenge.calories_target }} calories
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-{{ challenge.status|default:'secondary' }}">
+                                            {{ challenge.status|title }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <a href="{% url 'challenge_detail' challenge.id %}" class="btn btn-info btn-sm">
+                                            View Details
+                                        </a>
+                                    </div>
                                 </div>
-                                <small class="text-muted">Joined: {{ participation.joined_at|date:"M d, Y" }}</small>
-                                <div class="mt-2">
-                                    <a href="{% url 'challenge_detail' participation.challenge.id %}" class="btn btn-sm btn-outline-primary">View Progress</a>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">You haven't joined any challenges yet.</p>
-                    <div class="text-center">
-                        <p>Join a challenge to compete with other users and earn achievements!</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <!-- Challenge Tips -->
-        <div class="card mt-4">
-            <div class="card-body">
-                <h5 class="card-title">Challenge Tips</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
-                        Join challenges that match your fitness level
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
-                        Stay consistent with your workouts
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
-                        Track your progress regularly
-                    </li>
-                    <li class="mb-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
-                        Support and encourage other participants
-                    </li>
-                </ul>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No challenges sent yet.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

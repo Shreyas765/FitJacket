@@ -102,12 +102,39 @@ class WorkoutPlanExercise(models.Model):
     notes = models.TextField(blank=True)
 
 class Challenge(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    participants = models.ManyToManyField(CustomUser, through='ChallengeParticipation')
-    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_challenges')
+    WORKOUT_TYPES = [
+        ('cardio', 'Cardio'),
+        ('strength', 'Strength Training'),
+        ('flexibility', 'Flexibility'),
+        ('hiit', 'HIIT'),
+        ('other', 'Other')
+    ]
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('completed', 'Completed'),
+        ('declined', 'Declined')
+    ]
+
+    challenger = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='challenges_sent', null=True)
+    challenged = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='challenges_received', null=True)
+    workout_type = models.CharField(max_length=20, choices=WORKOUT_TYPES, default='cardio')
+    duration = models.PositiveIntegerField(help_text="Duration in minutes", default=30)
+    description = models.TextField(blank=True)
+    deadline = models.DateTimeField(null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    calories_target = models.PositiveIntegerField(null=True, blank=True, help_text="Target calories to burn")
+    location = models.CharField(max_length=100, blank=True)
+    notes = models.TextField(blank=True, help_text="Additional notes or requirements")
+
+    def __str__(self):
+        return f"{self.challenger.username if self.challenger else 'Unknown'} challenged {self.challenged.username if self.challenged else 'Unknown'} to {self.workout_type}"
+
+    class Meta:
+        ordering = ['-created_at']
 
 class ChallengeParticipation(models.Model):
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
