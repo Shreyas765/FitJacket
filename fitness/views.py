@@ -19,6 +19,7 @@ from .forms import (
     WorkoutPlanExerciseForm, ChallengeForm, ProgressStatsForm,
     LocationForm, AICoachingForm, CustomPasswordResetForm
 )
+from workout_assistant import WorkoutData, get_workout_tip
 
 def home(request):
     if request.user.is_authenticated:
@@ -66,6 +67,20 @@ def dashboard(request):
     total_workouts = workouts.count()
     total_calories = workouts.aggregate(total=Sum('calories_burned'))['total'] or 0
     avg_duration = workouts.aggregate(avg=Avg('duration'))['avg'] or 0
+
+    # Get last 3 workouts for the tip
+    last_workouts = workouts.order_by('-created_at')[:3]
+    workout_data = WorkoutData(
+        goals=[goal.description for goal in goals],
+        progress=progress_stats.first().description if progress_stats else "",
+        last_workouts=[{
+            "date": workout.created_at.strftime("%Y-%m-%d"),
+            "type": workout.workout_type,
+            "duration": workout.duration
+        } for workout in last_workouts]
+    )
+    
+    workout_tip = get_workout_tip(workout_data)
     
     return render(request, 'fitness/dashboard.html', {
         'goals': goals,
@@ -76,7 +91,8 @@ def dashboard(request):
         'progress_stats': progress_stats,
         'total_workouts': total_workouts,
         'total_calories': total_calories,
-        'avg_duration': avg_duration
+        'avg_duration': avg_duration,
+        'workout_tip': workout_tip
     })
 
 @login_required
@@ -356,3 +372,26 @@ def challenges(request):
         'active_challenges': active_challenges,
         'my_challenges': my_challenges
     })
+
+@login_required
+def get_workout_tip_ajax(request):
+    if request.method == 'POST':
+        goals = Goal.objects.filter(user=request.user)
+        workouts = Workout.objects.filter(user=request.user)
+        progress_stats = ProgressStats.objects.filter(user=request.user).order_by('-date')[:1]
+        
+        last_workouts = workouts.order_by('-created_at')[:3]
+        workout_data = WorkoutData(
+            goals=[goal.description for goal in goals],
+            progress=progress_stats.first().description if progress_stats else "",
+            last_workouts=[{
+                "date": workout.created_at.strftime("%Y-%m-%d"),
+                "type": workout.workout_type,
+                "duration": workout.duration
+            } for workout in last_workouts]
+        )
+        
+        tip = get_workout_tip(workout_data)
+        return JsonResponse({'tip': tip})
+    
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
