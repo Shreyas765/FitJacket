@@ -57,4 +57,5 @@ urlpatterns = [
     path('feedback/<str:model_type>/<int:item_id>/', views.provide_feedback, name='provide_feedback'),
     path('suggestion/<int:suggestion_id>/read/', views.mark_suggestion_read, name='mark_suggestion_read'),
     path('get-workout-tip/', views.get_workout_tip_ajax, name='get_workout_tip'),
+    path('get-nearby-locations/', views.get_nearby_locations_ajax, name='get_nearby_locations'),
 ] 

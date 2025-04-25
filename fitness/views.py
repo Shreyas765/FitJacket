@@ -9,6 +9,8 @@ from django.urls import reverse_lazy
 from django.db.models import Sum, Count, Avg
 from django.http import JsonResponse
 from django.utils import timezone
+from django.views.decorators.http import require_http_methods
+import json
 from .models import (
     CustomUser, Goal, Workout, WorkoutPlan, WorkoutPlanExercise,
     Challenge, ChallengeParticipation, Achievement, UserAchievement,
@@ -17,8 +19,10 @@ from .models import (
 from .forms import (
     UserRegistrationForm, GoalForm, WorkoutForm, WorkoutPlanForm,
     WorkoutPlanExerciseForm, ChallengeForm, ProgressStatsForm,
-    LocationForm, AICoachingForm, CustomPasswordResetForm
+    LocationForm, AICoachingForm, CustomPasswordResetForm,
+    CoachFeedbackForm, CoachSuggestionForm
 )
+from .utils import get_nearby_locations
 from django.contrib import messages
 
 # Make workout assistant optional
@@ -94,6 +98,15 @@ def dashboard(request):
     else:
         workout_tip = "Keep up the great work! Remember to stay hydrated and maintain proper form during your workouts."
     
+    # Get nearby locations (using default coordinates for demo)
+    # In a real app, you would get these from the user's location
+    default_lat = 40.7128  # New York City coordinates
+    default_lng = -74.0060
+    
+    # Get nearby parks and gyms
+    parks = get_nearby_locations(default_lat, default_lng, ['16032'])  # Parks category
+    gyms = get_nearby_locations(default_lat, default_lng, ['18021'])  # Gyms category
+    
     return render(request, 'fitness/dashboard.html', {
         'goals': goals,
         'workouts': workouts,
@@ -104,7 +117,9 @@ def dashboard(request):
         'total_workouts': total_workouts,
         'total_calories': total_calories,
         'avg_duration': avg_duration,
-        'workout_tip': workout_tip
+        'workout_tip': workout_tip,
+        'parks': parks,
+        'gyms': gyms
     })
 
 @login_required
@@ -114,7 +129,7 @@ def coach_dashboard(request):
     
     users = CustomUser.objects.filter(user_type='user')
     workout_plans = WorkoutPlan.objects.filter(coach=request.user)
-    challenges = Challenge.objects.filter(created_by=request.user)
+    challenges = Challenge.objects.filter(challenger=request.user)
     
     return render(request, 'fitness/coach_dashboard.html', {
         'users': users,
@@ -471,3 +486,24 @@ def get_workout_tip_ajax(request):
         'tip': tip,
         'source': 'ai'
     })
+
+@login_required
+@require_http_methods(["POST"])
+def get_nearby_locations_ajax(request):
+    try:
+        data = json.loads(request.body)
+        latitude = float(data.get('latitude'))
+        longitude = float(data.get('longitude'))
+        
+        # Get nearby parks and gyms (limited to 3 each)
+        parks = get_nearby_locations(latitude, longitude, ['16032'])[:3]  # Parks category
+        gyms = get_nearby_locations(latitude, longitude, ['18021'])[:3]  # Gyms category
+        
+        return JsonResponse({
+            'parks': parks,
+            'gyms': gyms
+        })
+    except (json.JSONDecodeError, ValueError, TypeError) as e:
+        return JsonResponse({'error': 'Invalid location data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
