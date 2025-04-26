@@ -12,7 +12,7 @@ class UserFitnessData:
 
 def get_ai_coach_response(user_data: UserFitnessData, question: str) -> str:
     client = Groq(
-        api_key=""
+        api_key="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"
     )
     
     # Format the user data and question into a clear prompt

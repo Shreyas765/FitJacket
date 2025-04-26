@@ -98,10 +98,15 @@ class ProgressStatsForm(forms.ModelForm):
         fields = ['date', 'weight', 'body_fat_percentage', 'muscle_mass', 'notes']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
-            'body_fat_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
-            'muscle_mass': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+            'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'placeholder': 'Weight in lbs'}),
+            'body_fat_percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'placeholder': 'Body Fat %'}),
+            'muscle_mass': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'placeholder': 'Muscle Mass in lbs'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2})
+        }
+        labels = {
+            'weight': 'Weight (lbs)',
+            'muscle_mass': 'Muscle Mass (lbs)',
+            'body_fat_percentage': 'Body Fat Percentage (%)'
         }
 
 class LocationForm(forms.ModelForm):

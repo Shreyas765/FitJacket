@@ -79,6 +79,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'friends' %}">Friends</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'ai_coaching' %}">AI Coaching</a>
+                        </li>
                         {% if user.user_type == 'coach' %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'coach_dashboard' %}">Coach Dashboard</a>
@@ -95,7 +98,6 @@
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{% url 'achievements' %}">Achievements</a></li>
-                                <li><a class="dropdown-item" href="{% url 'ai_coaching' %}">AI Coaching</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="post" action="{% url 'logout' %}" class="d-inline">

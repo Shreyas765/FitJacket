@@ -84,13 +84,46 @@ def dashboard(request):
     total_calories = workouts.aggregate(total=Sum('calories_burned'))['total'] or 0
     avg_duration = workouts.aggregate(avg=Avg('duration'))['avg'] or 0
 
+    # Prepare data for progress line graph (last 7 progress entries)
+    last_7_progress = ProgressStats.objects.filter(
+        user=request.user,
+        id__in=ProgressStats.objects.filter(user=request.user)
+            .order_by('-date')
+            .values_list('id', flat=True)[:7]
+    ).order_by('date')
+
+    progress_graph_data = {
+        'dates': [progress.date.strftime('%Y-%m-%d') for progress in last_7_progress],
+        'weights': [float(progress.weight) if progress.weight else None for progress in last_7_progress],
+        'muscle_mass': [float(progress.muscle_mass) if progress.muscle_mass else None for progress in last_7_progress]
+    }
+
+    # Prepare data for pie chart (workout types)
+    workout_types = workouts.values('workout_type').annotate(count=Count('id'))
+    pie_chart_data = {
+        'types': [wt['workout_type'] for wt in workout_types],
+        'counts': [wt['count'] for wt in workout_types]
+    }
+
     # Get workout tip
     if WORKOUT_ASSISTANT_AVAILABLE:
         # Get last 3 workouts for the tip
         last_workouts = workouts.order_by('-created_at')[:3]
+        latest_progress = progress_stats.first()
+        progress_text = ""
+        if latest_progress:
+            progress_parts = []
+            if latest_progress.weight:
+                progress_parts.append(f"Weight: {latest_progress.weight} lbs")
+            if latest_progress.body_fat_percentage:
+                progress_parts.append(f"Body Fat: {latest_progress.body_fat_percentage}%")
+            if latest_progress.muscle_mass:
+                progress_parts.append(f"Muscle Mass: {latest_progress.muscle_mass} lbs")
+            progress_text = ", ".join(progress_parts)
+        
         workout_data = WorkoutData(
             goals=", ".join([goal.description for goal in goals]),
-            progress=progress_stats.first().description if progress_stats else "",
+            progress=progress_text,
             last_workouts=[{
                 "date": workout.created_at.strftime("%Y-%m-%d"),
                 "type": workout.workout_type,
@@ -122,7 +155,9 @@ def dashboard(request):
         'avg_duration': avg_duration,
         'workout_tip': workout_tip,
         'parks': parks,
-        'gyms': gyms
+        'gyms': gyms,
+        'progress_graph_data': json.dumps(progress_graph_data),
+        'pie_chart_data': json.dumps(pie_chart_data)
     })
 
 @login_required
@@ -359,7 +394,15 @@ def ai_coaching(request):
             
             # Format the data
             goals_text = ", ".join([goal.description for goal in goals])
-            progress_text = ", ".join([f"{stat.metric}: {stat.value}" for stat in progress])
+            progress_parts = []
+            for stat in progress:
+                if stat.weight:
+                    progress_parts.append(f"Weight: {stat.weight} lbs")
+                if stat.body_fat_percentage:
+                    progress_parts.append(f"Body Fat: {stat.body_fat_percentage}%")
+                if stat.muscle_mass:
+                    progress_parts.append(f"Muscle Mass: {stat.muscle_mass} lbs")
+            progress_text = ", ".join(progress_parts)
             workouts_data = [{
                 'date': workout.created_at.strftime('%Y-%m-%d'),
                 'type': workout.workout_type,
@@ -499,7 +542,15 @@ def get_workout_tip_ajax(request):
     
     # Format the data
     goals_text = ", ".join([goal.description for goal in goals])
-    progress_text = ", ".join([f"{stat.metric}: {stat.value}" for stat in progress])
+    progress_parts = []
+    for stat in progress:
+        if stat.weight:
+            progress_parts.append(f"Weight: {stat.weight} lbs")
+        if stat.body_fat_percentage:
+            progress_parts.append(f"Body Fat: {stat.body_fat_percentage}%")
+        if stat.muscle_mass:
+            progress_parts.append(f"Muscle Mass: {stat.muscle_mass} lbs")
+    progress_text = ", ".join(progress_parts)
     workouts_data = [{
         'date': workout.date.strftime('%Y-%m-%d'),
         'type': workout.workout_type,

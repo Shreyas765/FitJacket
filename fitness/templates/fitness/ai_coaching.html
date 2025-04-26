@@ -1,4 +1,5 @@
 {% extends 'fitness/base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}AI Fitness Coach - FitJacket{% endblock %}
 
@@ -34,7 +35,7 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             {{ form.question.label_tag }}
-                            {{ form.question }}
+                            {{ form.question|add_class:"form-control form-control-sm" }}
                             {% if form.question.errors %}
                                 <div class="invalid-feedback d-block">
                                     {{ form.question.errors }}
@@ -70,6 +71,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         var chatContainer = document.getElementById('chat-container');
         chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // Add enter key submission
+        document.getElementById('id_question').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chat-form').submit();
+            }
+        });
     });
 </script>
 {% endblock %} 

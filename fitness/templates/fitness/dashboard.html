@@ -2,6 +2,10 @@
 
 {% block title %}Dashboard - FitJacket{% endblock %}
 
+{% block extra_head %}
+<script src="https://unpkg.com/chart.js@3.7.0/dist/chart.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <!-- Stats Overview -->
@@ -133,12 +137,20 @@
                 <a href="{% url 'log_progress' %}" class="btn btn-primary btn-sm">Log Progress</a>
             </div>
             <div class="card-body">
-                {% if progress_entries %}
+                {% if progress_stats %}
                     <ul class="list-group">
-                        {% for progress in progress_entries %}
+                        {% for progress in progress_stats %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>Weight: {{ progress.weight }} lbs</strong>
+                                    <strong>Weight: {{ progress.weight|default:"-" }} lbs</strong>
+                                    {% if progress.body_fat_percentage %}
+                                        <br>
+                                        <small class="text-muted">Body Fat: {{ progress.body_fat_percentage }}%</small>
+                                    {% endif %}
+                                    {% if progress.muscle_mass %}
+                                        <br>
+                                        <small class="text-muted">Muscle Mass: {{ progress.muscle_mass }} lbs</small>
+                                    {% endif %}
                                     <br>
                                     <small class="text-muted">Date: {{ progress.date|date:"F d, Y" }}</small>
                                 </div>
@@ -252,11 +264,182 @@
             </div>
         </div>
     </div>
+
+    <!-- Workout Graphs -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Progress Tracking</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-center">Weight Progress</h6>
+                    <div style="height: 200px;">
+                        <canvas id="weightLineChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-center">Muscle Mass Progress</h6>
+                    <div style="height: 200px;">
+                        <canvas id="muscleLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Workout Types Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="workoutPieChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+// Debug Chart.js loading
+console.log('Checking Chart.js availability...');
+console.log('Chart object:', typeof Chart);
+
+// Wait for Chart.js to be fully loaded
+window.addEventListener('load', function() {
+    console.log('Window loaded, checking Chart.js again...');
+    console.log('Chart object:', typeof Chart);
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js failed to load. Trying alternative loading method...');
+        // Try loading Chart.js dynamically
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/chart.js@3.7.0/dist/chart.min.js';
+        script.onload = function() {
+            console.log('Chart.js loaded dynamically');
+            initializeCharts();
+        };
+        script.onerror = function() {
+            console.error('Failed to load Chart.js dynamically');
+        };
+        document.head.appendChild(script);
+    } else {
+        initializeCharts();
+    }
+});
+
+function initializeCharts() {
+    console.log('Initializing charts...');
+    // Parse the JSON data
+    const pieChartData = JSON.parse('{{ pie_chart_data|escapejs }}');
+    const progressGraphData = JSON.parse('{{ progress_graph_data|escapejs }}');
+
+    // Weight Line Chart
+    const weightCtx = document.getElementById('weightLineChart').getContext('2d');
+    new Chart(weightCtx, {
+        type: 'line',
+        data: {
+            labels: progressGraphData.dates,
+            datasets: [{
+                label: 'Weight (lbs)',
+                data: progressGraphData.weights,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Weight (lbs)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Muscle Mass Line Chart
+    const muscleCtx = document.getElementById('muscleLineChart').getContext('2d');
+    new Chart(muscleCtx, {
+        type: 'line',
+        data: {
+            labels: progressGraphData.dates,
+            datasets: [{
+                label: 'Muscle Mass (lbs)',
+                data: progressGraphData.muscle_mass,
+                borderColor: 'rgb(255, 159, 64)',
+                backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Muscle Mass (lbs)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Pie Chart for Workout Types
+    const pieCtx = document.getElementById('workoutPieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: pieChartData.types,
+            datasets: [{
+                data: pieChartData.counts,
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: true,
+                    text: 'Workout Types Distribution'
+                }
+            }
+        }
+    });
+
+    // Call the nearby locations function
+    getNearbyLocations();
+}
+
 document.getElementById('get-tip-btn').addEventListener('click', function() {
     const tipElement = document.getElementById('workout-tip');
     tipElement.innerHTML = 'Loading tip...';
@@ -355,8 +538,5 @@ function getNearbyLocations() {
         document.getElementById('location-error').classList.remove('d-none');
     }
 }
-
-// Call the function when the page loads
-document.addEventListener('DOMContentLoaded', getNearbyLocations);
 </script>
 {% endblock %} 
