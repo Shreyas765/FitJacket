@@ -2,7 +2,7 @@ import requests
 from django.conf import settings
 import os
 
-FOURSQUARE_API_KEY = api_key=os.environ.get("FOURSQUARE_API_KEY")
+FOURSQUARE_API_KEY = ""
 FOURSQUARE_API_URL = 'https://api.foursquare.com/v3/places/search'
 
 def get_nearby_locations(latitude, longitude, categories):

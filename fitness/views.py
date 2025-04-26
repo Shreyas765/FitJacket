@@ -28,11 +28,14 @@ from django.contrib import messages
 # Make workout assistant optional
 try:
     from workout_assistant import WorkoutData, get_workout_tip
+    from ai_coach import UserFitnessData, get_ai_coach_response
     WORKOUT_ASSISTANT_AVAILABLE = True
 except ImportError:
     WORKOUT_ASSISTANT_AVAILABLE = False
     def get_workout_tip(workout_data):
         return "Keep up the great work! Remember to stay hydrated and maintain proper form during your workouts."
+    def get_ai_coach_response(user_data, question):
+        return "I'm sorry, the AI coaching feature is currently unavailable. Please try again later."
 
 def home(request):
     if request.user.is_authenticated:
@@ -348,15 +351,46 @@ def ai_coaching(request):
         if form.is_valid():
             session = form.save(commit=False)
             session.user = request.user
-            # Here you would integrate with your AI coaching API
-            # For now, we'll just save the question
-            session.response = "This is a placeholder response. AI integration coming soon!"
+            
+            # Get user's recent data
+            goals = Goal.objects.filter(user=request.user, is_completed=False)
+            progress = ProgressStats.objects.filter(user=request.user).order_by('-date')[:5]
+            last_workouts = Workout.objects.filter(user=request.user).order_by('-created_at')[:3]
+            
+            # Format the data
+            goals_text = ", ".join([goal.description for goal in goals])
+            progress_text = ", ".join([f"{stat.metric}: {stat.value}" for stat in progress])
+            workouts_data = [{
+                'date': workout.created_at.strftime('%Y-%m-%d'),
+                'type': workout.workout_type,
+                'duration': f"{workout.duration} min"
+            } for workout in last_workouts]
+            
+            # Create user fitness data object
+            user_data = UserFitnessData(
+                goals=goals_text,
+                progress=progress_text,
+                last_workouts=workouts_data,
+                fitness_level=request.user.fitness_level,
+                user_type=request.user.user_type
+            )
+            
+            # Get AI coach response
+            session.response = get_ai_coach_response(user_data, session.question)
             session.save()
-            return redirect('ai_coaching_history')
+            
+            # Redirect back to the same page to show the new message
+            return redirect('ai_coaching')
     else:
         form = AICoachingForm()
     
-    return render(request, 'fitness/ai_coaching.html', {'form': form})
+    # Get all previous sessions for this user
+    sessions = AICoachingSession.objects.filter(user=request.user).order_by('-created_at')
+    
+    return render(request, 'fitness/ai_coaching.html', {
+        'form': form,
+        'sessions': sessions
+    })
 
 @login_required
 def ai_coaching_history(request):

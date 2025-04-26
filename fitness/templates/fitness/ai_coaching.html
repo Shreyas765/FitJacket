@@ -1,0 +1,75 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}AI Fitness Coach - FitJacket{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">AI Fitness Coach</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chat-container mb-4" style="height: 400px; overflow-y: auto;" id="chat-container">
+                        {% if sessions %}
+                            {% for session in sessions reversed %}
+                                <div class="chat-message mb-3">
+                                    <div class="user-message bg-light p-3 rounded mb-2">
+                                        <strong>You:</strong> {{ session.question }}
+                                    </div>
+                                    <div class="ai-message bg-primary text-white p-3 rounded">
+                                        <strong>AI Coach:</strong> {{ session.response }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted">
+                                <p>No previous conversations. Ask your first question below!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" id="chat-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.question.label_tag }}
+                            {{ form.question }}
+                            {% if form.question.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.question.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Ask Question</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 1rem;
+    }
+    .user-message {
+        margin-left: 20%;
+    }
+    .ai-message {
+        margin-right: 20%;
+    }
+</style>
+
+<script>
+    // Auto-scroll to bottom of chat container
+    document.addEventListener('DOMContentLoaded', function() {
+        var chatContainer = document.getElementById('chat-container');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+</script>
+{% endblock %} 

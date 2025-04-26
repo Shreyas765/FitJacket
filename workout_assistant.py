@@ -10,7 +10,7 @@ class WorkoutData:
 
 def get_workout_tip(workout_data: WorkoutData) -> str:
     client = Groq(
-        api_key=os.environ.get("GROQ_API_KEY")
+        api_key=""
     )
     
     # Format the workout data into a clear prompt
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # Example data - replace with actual user data
     sample_data = WorkoutData(
         goals="Build muscle and improve endurance",
-        progress="Gained 2 lbs of muscle in the last month",
+        progress="Weight: 180 lbs, Body Fat: 15%, Strength: Increased by 20%",
         last_workouts=[
             {"date": "2024-03-20", "type": "Strength", "duration": "60 min"},
             {"date": "2024-03-18", "type": "Cardio", "duration": "30 min"},
