@@ -26,19 +26,19 @@ class CustomUser(AbstractUser):
             return 0
         
         # Get all workout dates
-        workout_dates = self.workout_set.values_list('date', flat=True).order_by('-date')
+        workout_dates = self.workout_set.values_list('created_at', flat=True).order_by('-created_at')
         if not workout_dates:
             return 0
             
         # Start with the most recent workout
         streak = 1
-        current_date = workout_dates[0]
+        current_date = workout_dates[0].date()
         
         # Check consecutive days
         for date in workout_dates[1:]:
-            if (current_date - date).days == 1:
+            if (current_date - date.date()).days == 1:
                 streak += 1
-                current_date = date
+                current_date = date.date()
             else:
                 break
                 
@@ -48,8 +48,8 @@ class CustomUser(AbstractUser):
     def has_weekend_workout(self):
         """Check if user has worked out on both Saturday and Sunday."""
         weekend_workouts = self.workout_set.filter(
-            date__week_day__in=[1, 7]  # 1 is Sunday, 7 is Saturday
-        ).values_list('date__week_day', flat=True).distinct()
+            created_at__week_day__in=[1, 7]  # 1 is Sunday, 7 is Saturday
+        ).values_list('created_at__week_day', flat=True).distinct()
         
         return len(weekend_workouts) == 2
 

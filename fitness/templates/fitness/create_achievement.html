@@ -1,0 +1,33 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>Create New Achievement</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_name" class="form-label">Achievement Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_description" class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_badge_image" class="form-label">Badge Image</label>
+                    {{ form.badge_image }}
+                </div>
+                <div class="mb-3">
+                    <label for="id_criteria" class="form-label">Criteria</label>
+                    {{ form.criteria }}
+                    <div class="form-text">Describe how users can earn this achievement (e.g., "Complete 5 workouts", "Workout streak of 7 days")</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Achievement</button>
+                <a href="{% url 'achievements' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

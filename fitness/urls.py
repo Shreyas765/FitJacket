@@ -44,6 +44,7 @@ urlpatterns = [
     
     # Achievement URLs
     path('achievements/', views.achievements, name='achievements'),
+    path('achievements/create/', views.create_achievement, name='create_achievement'),
     
     # Location URLs
     path('nearby-locations/', views.nearby_locations, name='nearby_locations'),

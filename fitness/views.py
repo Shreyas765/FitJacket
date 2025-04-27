@@ -6,11 +6,12 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.urls import reverse_lazy
-from django.db.models import Sum, Count, Avg
+from django.db.models import Sum, Count, Avg, F, Q
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 import json
+from django.db import models
 from .models import (
     CustomUser, Goal, Workout, WorkoutPlan, WorkoutPlanExercise,
     Challenge, ChallengeParticipation, Achievement, UserAchievement,
@@ -20,7 +21,7 @@ from .forms import (
     UserRegistrationForm, GoalForm, WorkoutForm, WorkoutPlanForm,
     WorkoutPlanExerciseForm, ChallengeForm, ProgressStatsForm,
     LocationForm, AICoachingForm, CustomPasswordResetForm,
-    CoachFeedbackForm, CoachSuggestionForm
+    CoachFeedbackForm, CoachSuggestionForm, AchievementForm
 )
 from .utils import get_nearby_locations
 from django.contrib import messages
@@ -234,6 +235,9 @@ def set_goal(request):
             goal = form.save(commit=False)
             goal.user = request.user
             goal.save()
+            # Check for achievements after setting a goal
+            check_achievements(request.user)
+            messages.success(request, 'Goal set successfully!')
             return redirect('dashboard')
     else:
         form = GoalForm()
@@ -247,6 +251,9 @@ def log_workout(request):
             workout = form.save(commit=False)
             workout.user = request.user
             workout.save()
+            # Check for achievements after logging a workout
+            check_achievements(request.user)
+            messages.success(request, 'Workout logged successfully!')
             return redirect('dashboard')
     else:
         form = WorkoutForm()
@@ -341,6 +348,8 @@ def challenge_detail(request, challenge_id):
             challenge.status = 'completed'
             challenge.completed_at = timezone.now()
             challenge.save()
+            # Check for achievements after completing a challenge
+            check_achievements(request.user)
             messages.success(request, 'Challenge marked as completed!')
         
         return redirect('challenges')
@@ -369,6 +378,9 @@ def log_progress(request):
             progress = form.save(commit=False)
             progress.user = request.user
             progress.save()
+            # Check for achievements after logging progress
+            check_achievements(request.user)
+            messages.success(request, 'Progress logged successfully!')
             return redirect('dashboard')
     else:
         form = ProgressStatsForm()
@@ -442,10 +454,177 @@ def ai_coaching_history(request):
 
 @login_required
 def achievements(request):
-    completed_goals_count = request.user.goal_set.filter(is_completed=True).count()
+    user_achievements = UserAchievement.objects.filter(user=request.user)
+    all_achievements = Achievement.objects.all()
+    
+    # Check for new achievements
+    check_achievements(request.user)
+    
+    # Get user's workout streak and weekend workout status
+    workout_streak = request.user.workout_streak
+    has_weekend_workout = request.user.has_weekend_workout
+    
+    # Get user's workout counts by type
+    workout_counts = Workout.objects.filter(user=request.user).values('workout_type').annotate(count=Count('id'))
+    
+    # Get user's total calories burned
+    total_calories = Workout.objects.filter(user=request.user).aggregate(total=Sum('calories_burned'))['total'] or 0
+    
+    # Get user's progress stats
+    progress_count = ProgressStats.objects.filter(user=request.user).count()
+    
+    # Get user's completed goals count
+    completed_goals = Goal.objects.filter(user=request.user, is_completed=True).count()
+    
+    # Get user's friends count
+    friends_count = request.user.friends.count()
+    
+    # Get user's completed challenges count
+    completed_challenges = Challenge.objects.filter(
+        (models.Q(challenger=request.user) | models.Q(challenged=request.user)),
+        status='completed'
+    ).count()
+    
     return render(request, 'fitness/achievements.html', {
-        'completed_goals_count': completed_goals_count
+        'user_achievements': user_achievements,
+        'all_achievements': all_achievements,
+        'is_coach': request.user.user_type == 'coach',
+        'workout_streak': workout_streak,
+        'has_weekend_workout': has_weekend_workout,
+        'workout_counts': workout_counts,
+        'total_calories': total_calories,
+        'progress_count': progress_count,
+        'completed_goals': completed_goals,
+        'friends_count': friends_count,
+        'completed_challenges': completed_challenges
     })
+
+@login_required
+def create_achievement(request):
+    if request.user.user_type != 'coach':
+        return redirect('achievements')
+        
+    if request.method == 'POST':
+        form = AchievementForm(request.POST, request.FILES)
+        if form.is_valid():
+            achievement = form.save()
+            messages.success(request, 'Achievement created successfully!')
+            return redirect('achievements')
+    else:
+        form = AchievementForm()
+    
+    return render(request, 'fitness/create_achievement.html', {
+        'form': form
+    })
+
+def check_achievements(user):
+    """Check if user has earned any new achievements"""
+    achievements = Achievement.objects.all()
+    for achievement in achievements:
+        if not UserAchievement.objects.filter(user=user, achievement=achievement).exists():
+            if check_achievement_criteria(user, achievement):
+                UserAchievement.objects.create(user=user, achievement=achievement)
+
+def check_achievement_criteria(user, achievement):
+    """Check if user meets the criteria for a specific achievement"""
+    criteria = achievement.criteria.lower()
+    
+    # Workout count achievements
+    if "complete 1 workout" in criteria:
+        return Workout.objects.filter(user=user).count() >= 1
+    elif "complete 5 workouts" in criteria:
+        return Workout.objects.filter(user=user).count() >= 5
+    elif "complete 20 cardio workouts" in criteria:
+        return Workout.objects.filter(user=user, workout_type='cardio').count() >= 20
+    elif "complete 20 strength training workouts" in criteria:
+        return Workout.objects.filter(user=user, workout_type='strength').count() >= 20
+    elif "complete 20 flexibility workouts" in criteria:
+        return Workout.objects.filter(user=user, workout_type='flexibility').count() >= 20
+    elif "complete 20 hiit workouts" in criteria:
+        return Workout.objects.filter(user=user, workout_type='hiit').count() >= 20
+    elif "complete 50 workouts" in criteria:
+        return Workout.objects.filter(user=user).count() >= 50
+    
+    # Time-based achievements
+    elif "workout streak of 7 days" in criteria:
+        return user.workout_streak >= 7
+    elif "weekend warrior" in criteria:
+        return user.has_weekend_workout
+    elif "complete a workout before 7 am" in criteria:
+        return Workout.objects.filter(user=user, created_at__hour__lt=7).exists()
+    elif "complete 10 workouts before 9 am" in criteria:
+        return Workout.objects.filter(user=user, created_at__hour__lt=9).count() >= 10
+    elif "complete 10 workouts after 8 pm" in criteria:
+        return Workout.objects.filter(user=user, created_at__hour__gte=20).count() >= 10
+    
+    # Location-based achievements
+    elif "work out at 5 different locations" in criteria:
+        return Workout.objects.filter(user=user).exclude(location__isnull=True).values('location').distinct().count() >= 5
+    
+    # Progress-based achievements
+    elif "log progress for 30 days" in criteria:
+        return ProgressStats.objects.filter(user=user).count() >= 30
+    elif "log progress for 7 consecutive days" in criteria:
+        progress_dates = ProgressStats.objects.filter(user=user).values_list('date', flat=True).order_by('date')
+        if len(progress_dates) < 7:
+            return False
+        for i in range(len(progress_dates) - 6):
+            if (progress_dates[i + 6] - progress_dates[i]).days == 6:
+                return True
+        return False
+    
+    # Goal-based achievements
+    elif "complete 5 goals" in criteria:
+        return Goal.objects.filter(user=user, is_completed=True).count() >= 5
+    elif "complete a goal before its target date" in criteria:
+        return Goal.objects.filter(
+            user=user,
+            is_completed=True,
+            target_date__gt=models.F('completed_at')
+        ).exists()
+    
+    # Social achievements
+    elif "add 5 friends" in criteria:
+        return user.friends.count() >= 5
+    
+    # Challenge achievements
+    elif "complete 3 challenges" in criteria:
+        return Challenge.objects.filter(
+            (models.Q(challenger=user) | models.Q(challenged=user)),
+            status='completed'
+        ).count() >= 3
+    
+    # Calorie-based achievements
+    elif "burn 1000 calories in total" in criteria:
+        total_calories = Workout.objects.filter(user=user).aggregate(total=Sum('calories_burned'))['total'] or 0
+        return total_calories >= 1000
+    elif "burn 500 calories in a single workout" in criteria:
+        return Workout.objects.filter(user=user, calories_burned__gte=500).exists()
+    
+    # Duration-based achievements
+    elif "complete a workout lasting more than 60 minutes" in criteria:
+        return Workout.objects.filter(user=user, duration__gt=60).exists()
+    
+    # Workout variety achievement
+    elif "complete at least one workout of each type" in criteria:
+        workout_types = Workout.objects.filter(user=user).values_list('workout_type', flat=True).distinct()
+        return len(workout_types) == len(Workout.WORKOUT_TYPES)
+    
+    # Consistency achievement
+    elif "work out at least 3 times a week for a month" in criteria:
+        from datetime import datetime, timedelta
+        one_month_ago = datetime.now() - timedelta(days=30)
+        weekly_workouts = Workout.objects.filter(
+            user=user,
+            created_at__gte=one_month_ago
+        ).extra(select={'week': "strftime('%Y-%W', created_at)"}).values('week').annotate(count=Count('id'))
+        return all(week['count'] >= 3 for week in weekly_workouts)
+    
+    # Achievement-based achievement
+    elif "earn 10 different achievements" in criteria:
+        return UserAchievement.objects.filter(user=user).count() >= 10
+    
+    return False
 
 @login_required
 def friends(request):
@@ -463,11 +642,10 @@ def friends(request):
 @login_required
 def add_friend(request, user_id):
     friend = get_object_or_404(CustomUser, id=user_id)
-    
-    # Add friend relationship
     request.user.friends.add(friend)
-    friend.friends.add(request.user)  # Make it mutual
-    
+    # Check for achievements after adding a friend
+    check_achievements(request.user)
+    messages.success(request, f'Added {friend.username} as a friend!')
     return redirect('friends')
 
 @login_required

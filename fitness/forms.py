@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from .models import (
     CustomUser, Goal, Workout, WorkoutPlan, WorkoutPlanExercise,
-    Challenge, ProgressStats, Location, AICoachingSession, CoachSuggestion
+    Challenge, ProgressStats, Location, AICoachingSession, CoachSuggestion, Achievement
 )
 
 class UserRegistrationForm(UserCreationForm):
@@ -153,4 +153,13 @@ class CoachSuggestionForm(forms.ModelForm):
         fields = ['content']
         widgets = {
             'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Enter your suggestion here...'})
+        }
+
+class AchievementForm(forms.ModelForm):
+    class Meta:
+        model = Achievement
+        fields = ['name', 'description', 'badge_image', 'criteria']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'criteria': forms.Textarea(attrs={'rows': 3}),
         } 
