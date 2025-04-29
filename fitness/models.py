@@ -145,7 +145,7 @@ class ChallengeParticipation(models.Model):
 class Achievement(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    badge_image = models.ImageField(upload_to='achievement_badges/')
+    badge_image = models.ImageField(upload_to='achievement_badges/', null=True, blank=True)
     criteria = models.TextField(help_text="Description of how to earn this achievement")
 
 class UserAchievement(models.Model):
