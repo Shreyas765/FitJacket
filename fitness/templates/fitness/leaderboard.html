@@ -1,0 +1,42 @@
+{% extends 'fitness/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Friends Leaderboard</h2>
+    
+    <div class="mb-3">
+        <form method="get" class="d-flex">
+            <label for="workoutType" class="form-label me-2">Select Workout Type:</label>
+            <select class="form-select" id="workoutType" name="workout_type" onchange="this.form.submit()">
+                <option value="cardio" {% if workout_type == 'cardio' %}selected{% endif %}>Cardio</option>
+                <option value="strength" {% if workout_type == 'strength' %}selected{% endif %}>Strength Training</option>
+                <option value="flexibility" {% if workout_type == 'flexibility' %}selected{% endif %}>Flexibility</option>
+                <option value="hiit" {% if workout_type == 'hiit' %}selected{% endif %}>HIIT</option>
+                <option value="other" {% if workout_type == 'other' %}selected{% endif %}>Other</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Username</th>
+                    <th>Total Duration (minutes)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in leaderboard_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.username }}</td>
+                    <td>{{ item.total_duration }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

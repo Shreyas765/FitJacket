@@ -205,6 +205,53 @@
         </div>
     </div>
 
+    <!-- Leaderboard -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Top Fitness Enthusiasts</h5>
+            </div>
+            <div class="card-body">
+                {% if leaderboard %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>User</th>
+                                    <th>Total Minutes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in leaderboard %}
+                                    <tr {% if user == request.user %}class="table-primary"{% endif %}>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            {% if user.profile_picture %}
+                                                <img src="{{ user.profile_picture.url }}" 
+                                                     alt="{{ user.username }}"
+                                                     class="rounded-circle"
+                                                     style="width: 30px; height: 30px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="https://placehold.co/30x30/607D8B/FFFFFF?text={{ user.username|slice:':1' }}" 
+                                                     alt="{{ user.username }}"
+                                                     class="rounded-circle">
+                                            {% endif %}
+                                            {{ user.username }}
+                                        </td>
+                                        <td>{{ user.total_minutes }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No workout data available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Coach Suggestions and Nearby Locations -->
     <div class="row">
         <!-- Coach Feedback -->

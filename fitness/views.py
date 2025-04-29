@@ -85,6 +85,11 @@ def dashboard(request):
     total_calories = workouts.aggregate(total=Sum('calories_burned'))['total'] or 0
     avg_duration = workouts.aggregate(avg=Avg('duration'))['avg'] or 0
 
+    # Get leaderboard data
+    leaderboard = CustomUser.objects.filter(user_type='user').annotate(
+        total_minutes=Sum('workout__duration')
+    ).exclude(total_minutes=None).order_by('-total_minutes')[:10]
+
     # Prepare data for progress line graph (last 7 progress entries)
     last_7_progress = ProgressStats.objects.filter(
         user=request.user,
@@ -158,7 +163,8 @@ def dashboard(request):
         'parks': parks,
         'gyms': gyms,
         'progress_graph_data': json.dumps(progress_graph_data),
-        'pie_chart_data': json.dumps(pie_chart_data)
+        'pie_chart_data': json.dumps(pie_chart_data),
+        'leaderboard': leaderboard
     })
 
 @login_required
