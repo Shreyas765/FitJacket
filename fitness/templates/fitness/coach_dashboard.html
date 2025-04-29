@@ -11,13 +11,17 @@
         {% if users %}
             <div class="list-group">
                 {% for user in users %}
-                    <a href="{% url 'user_profile' user.id %}" class="list-group-item list-group-item-action">
+                    <div class="list-group-item">
                         <div class="d-flex w-100 justify-content-between">
                             <h5 class="mb-1">{{ user.username }}</h5>
                             <small>{{ user.email }}</small>
                         </div>
                         <p class="mb-1">Goals: {{ user.goal_set.count }} | Workouts: {{ user.workout_set.count }}</p>
-                    </a>
+                        <div class="mt-2">
+                            <a href="{% url 'user_profile' user.id %}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                            <a href="{% url 'view_student_progress' user.id %}" class="btn btn-sm btn-outline-success">View Progress Reports</a>
+                        </div>
+                    </div>
                 {% endfor %}
             </div>
         {% else %}

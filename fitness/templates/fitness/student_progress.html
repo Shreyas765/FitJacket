@@ -1,0 +1,158 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}{{ student.username }}'s Progress Reports - FitJacket{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ student.username }}'s Progress Reports</h1>
+    <a href="{% url 'coach_dashboard' %}" class="btn btn-outline-primary">Back to Dashboard</a>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Progress History</h5>
+            </div>
+            <div class="card-body">
+                {% if progress_stats %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Weight</th>
+                                    <th>Body Fat %</th>
+                                    <th>Muscle Mass</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in progress_stats %}
+                                    <tr>
+                                        <td>{{ stat.date|date:"M d, Y" }}</td>
+                                        <td>{{ stat.weight|default:"-" }} kg</td>
+                                        <td>{{ stat.body_fat_percentage|default:"-" }}%</td>
+                                        <td>{{ stat.muscle_mass|default:"-" }} kg</td>
+                                        <td>{{ stat.notes|default:"-" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No progress stats recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Weight Progress</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="weightLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Body Fat Progress</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;">
+                    <canvas id="bodyFatLineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prepare data for charts
+    const progressData = {
+        dates: {{ progress_dates|safe }},
+        weights: {{ progress_weights|safe }},
+        bodyFat: {{ progress_body_fat|safe }}
+    };
+
+    // Weight Line Chart
+    const weightCtx = document.getElementById('weightLineChart').getContext('2d');
+    new Chart(weightCtx, {
+        type: 'line',
+        data: {
+            labels: progressData.dates,
+            datasets: [{
+                label: 'Weight (kg)',
+                data: progressData.weights,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Weight (kg)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Body Fat Line Chart
+    const bodyFatCtx = document.getElementById('bodyFatLineChart').getContext('2d');
+    new Chart(bodyFatCtx, {
+        type: 'line',
+        data: {
+            labels: progressData.dates,
+            datasets: [{
+                label: 'Body Fat %',
+                data: progressData.bodyFat,
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Body Fat %'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

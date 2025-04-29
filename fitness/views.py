@@ -770,3 +770,29 @@ def get_nearby_locations_ajax(request):
         return JsonResponse({'error': 'Invalid location data'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def view_student_progress(request, user_id):
+    if request.user.user_type != 'coach':
+        return redirect('dashboard')
+    
+    student = get_object_or_404(CustomUser, id=user_id)
+    progress_stats = ProgressStats.objects.filter(user=student).order_by('-date')
+    
+    # Prepare data for charts
+    progress_dates = []
+    progress_weights = []
+    progress_body_fat = []
+    
+    for stat in progress_stats:
+        progress_dates.append(stat.date.strftime('%Y-%m-%d'))
+        progress_weights.append(float(stat.weight) if stat.weight else None)
+        progress_body_fat.append(float(stat.body_fat_percentage) if stat.body_fat_percentage else None)
+    
+    return render(request, 'fitness/student_progress.html', {
+        'student': student,
+        'progress_stats': progress_stats,
+        'progress_dates': json.dumps(progress_dates),
+        'progress_weights': json.dumps(progress_weights),
+        'progress_body_fat': json.dumps(progress_body_fat)
+    })

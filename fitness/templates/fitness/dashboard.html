@@ -207,6 +207,48 @@
 
     <!-- Coach Suggestions and Nearby Locations -->
     <div class="row">
+        <!-- Coach Feedback -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Coach Feedback</h5>
+                </div>
+                <div class="card-body">
+                    {% if goals or workouts %}
+                        <div class="list-group">
+                            {% for goal in goals %}
+                                {% if goal.coach_feedback %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-1">Goal Feedback</h6>
+                                            <small class="text-muted">{{ goal.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                        <p class="mb-1">{{ goal.description }}</p>
+                                        <p class="mb-0"><strong>Coach's Feedback:</strong> {{ goal.coach_feedback }}</p>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for workout in workouts %}
+                                {% if workout.coach_feedback %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-1">Workout Feedback</h6>
+                                            <small class="text-muted">{{ workout.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                        <p class="mb-1">{{ workout.description }}</p>
+                                        <p class="mb-0"><strong>Coach's Feedback:</strong> {{ workout.coach_feedback }}</p>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No feedback from your coach yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
         <!-- Coach Suggestions -->
         <div class="col-md-6 mb-4">
             <div class="card">
@@ -232,38 +274,38 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Nearby Locations -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Nearby Locations</h5>
+    <!-- Nearby Locations -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Nearby Locations</h5>
+            </div>
+            <div class="card-body">
+                <div id="location-error" class="alert alert-danger d-none">
+                    Unable to get your location. Please enable location services.
                 </div>
-                <div class="card-body">
-                    <div id="location-error" class="alert alert-danger d-none">
-                        Unable to get your location. Please enable location services.
+                <div id="locations-loading" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                    <div id="locations-loading" class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                    <p class="mt-2">Finding locations near you...</p>
+                </div>
+                <div id="nearby-locations" class="d-none">
+                    <!-- Gyms Section -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">Gyms</h6>
+                        <div id="gyms-list" class="list-group">
+                            <!-- Gyms will be loaded here -->
                         </div>
-                        <p class="mt-2">Finding locations near you...</p>
                     </div>
-                    <div id="nearby-locations" class="d-none">
-                        <!-- Gyms Section -->
-                        <div class="mb-4">
-                            <h6 class="text-primary">Gyms</h6>
-                            <div id="gyms-list" class="list-group">
-                                <!-- Gyms will be loaded here -->
-                            </div>
-                        </div>
 
-                        <!-- Parks Section -->
-                        <div>
-                            <h6 class="text-primary">Parks</h6>
-                            <div id="parks-list" class="list-group">
-                                <!-- Parks will be loaded here -->
-                            </div>
+                    <!-- Parks Section -->
+                    <div>
+                        <h6 class="text-primary">Parks</h6>
+                        <div id="parks-list" class="list-group">
+                            <!-- Parks will be loaded here -->
                         </div>
                     </div>
                 </div>
