@@ -1,0 +1,51 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Create Workout Plan - FitJacket{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center mb-0">Create Workout Plan for {{ user.username }}</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if plan_form.errors %}
+                        <div class="alert alert-danger">
+                            Please correct the errors below.
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label">Plan Name</label>
+                        <input type="text" name="name" id="id_name" class="form-control" required>
+                        {% if plan_form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ plan_form.name.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Description</label>
+                        <textarea name="description" id="id_description" class="form-control" rows="3" required></textarea>
+                        {% if plan_form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ plan_form.description.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Create Plan</button>
+                        <a href="{% url 'coach_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
