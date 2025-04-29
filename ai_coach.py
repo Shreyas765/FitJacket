@@ -1,6 +1,6 @@
 import os
-from groq import Groq
 from typing import List, Dict
+from groq_client import GroqClientSingleton
 
 class UserFitnessData:
     def __init__(self, goals: str, progress: str, last_workouts: List[Dict], fitness_level: str, user_type: str):
@@ -11,9 +11,8 @@ class UserFitnessData:
         self.user_type = user_type
 
 def get_ai_coach_response(user_data: UserFitnessData, question: str) -> str:
-    client = Groq(
-        api_key="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"
-    )
+    # Get the singleton instance
+    groq_client = GroqClientSingleton()
     
     # Format the user data and question into a clear prompt
     prompt = f"""You are an AI fitness coach. Based on the following user data, provide a helpful and personalized response to their question.
@@ -30,7 +29,7 @@ def get_ai_coach_response(user_data: UserFitnessData, question: str) -> str:
     
     Provide a concise response in 2-3 sentences maximum. Focus on the most important advice. Do not use bold text, bullet points, or numbering."""
 
-    chat_completion = client.chat.completions.create(
+    chat_completion = groq_client.get_chat_completion(
         messages=[
             {
                 "role": "system",
@@ -40,8 +39,7 @@ def get_ai_coach_response(user_data: UserFitnessData, question: str) -> str:
                 "role": "user",
                 "content": prompt,
             }
-        ],
-        model="llama-3.3-70b-versatile",
+        ]
     )
     
     return chat_completion.choices[0].message.content.strip()

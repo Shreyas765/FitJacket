@@ -1,6 +1,6 @@
 import os
-from groq import Groq
 from typing import List, Dict
+from groq_client import GroqClientSingleton
 
 class WorkoutData:
     def __init__(self, goals: str, progress: str, last_workouts: List[Dict]):
@@ -9,9 +9,8 @@ class WorkoutData:
         self.last_workouts = last_workouts
 
 def get_workout_tip(workout_data: WorkoutData) -> str:
-    client = Groq(
-        api_key="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"
-    )
+    # Get the singleton instance
+    groq_client = GroqClientSingleton()
     
     # Format the workout data into a clear prompt
     prompt = f"""Based on the following user data, provide exactly one specific workout tip in a single sentence:
@@ -21,14 +20,13 @@ def get_workout_tip(workout_data: WorkoutData) -> str:
     
     Provide only one sentence as a tip, no additional text."""
 
-    chat_completion = client.chat.completions.create(
+    chat_completion = groq_client.get_chat_completion(
         messages=[
             {
                 "role": "user",
                 "content": prompt,
             }
-        ],
-        model="llama-3.3-70b-versatile",
+        ]
     )
     
     return chat_completion.choices[0].message.content.strip()
