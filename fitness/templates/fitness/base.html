@@ -7,50 +7,136 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
+        :root {
+            --gt-gold: #B3A369;
+            --gt-dark-gold: #857437;
+            --white: #FFFFFF;
+            --light-gray: #F5F5F5;
+            --dark-gray: #333333;
+        }
+        
         html, body {
             height: 100%;
             margin: 0;
+            background-color: var(--white);
+            color: var(--dark-gray);
         }
+        
         body {
             display: flex;
             flex-direction: column;
         }
+        
+        .navbar {
+            background-color: var(--white) !important;
+            border-bottom: 2px solid var(--gt-gold);
+            box-shadow: 0 2px 4px rgba(179, 163, 105, 0.1);
+        }
+        
         .navbar-brand {
             font-weight: bold;
+            color: var(--gt-gold) !important;
         }
+        
         .nav-link {
-            color: #333;
+            color: var(--dark-gray) !important;
         }
+        
         .nav-link:hover {
-            color: #007bff;
+            color: var(--gt-gold) !important;
         }
+        
+        .dropdown-menu {
+            background-color: var(--white);
+            border: 1px solid var(--gt-gold);
+        }
+        
+        .dropdown-item {
+            color: var(--dark-gray);
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--light-gray);
+            color: var(--gt-gold);
+        }
+        
+        .dropdown-divider {
+            border-top: 1px solid var(--gt-gold);
+        }
+        
         .main-content {
             padding: 20px;
             flex: 1 0 auto;
         }
+        
         .card {
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: var(--white);
+            border: 1px solid var(--gt-gold);
+            box-shadow: 0 2px 4px rgba(179, 163, 105, 0.1);
         }
+        
         .card-header {
-            background-color: #f8f9fa;
+            background-color: var(--light-gray);
+            color: var(--gt-gold);
             font-weight: bold;
+            border-bottom: 1px solid var(--gt-gold);
         }
+        
         .stats-card {
             text-align: center;
             padding: 20px;
         }
+        
         .stats-number {
             font-size: 2em;
             font-weight: bold;
-            color: #007bff;
+            color: var(--gt-gold);
         }
+        
         .stats-label {
-            color: #6c757d;
+            color: var(--gt-dark-gold);
         }
+        
         .footer {
             flex-shrink: 0;
             width: 100%;
+            background-color: var(--white);
+            border-top: 2px solid var(--gt-gold);
+        }
+        
+        .btn-primary {
+            background-color: var(--gt-gold);
+            border-color: var(--gt-gold);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--gt-dark-gold);
+            border-color: var(--gt-dark-gold);
+            color: var(--white);
+        }
+        
+        .form-control {
+            background-color: var(--white);
+            border: 1px solid var(--gt-gold);
+            color: var(--dark-gray);
+        }
+        
+        .form-control:focus {
+            background-color: var(--white);
+            border-color: var(--gt-dark-gold);
+            color: var(--dark-gray);
+            box-shadow: 0 0 0 0.25rem rgba(179, 163, 105, 0.25);
+        }
+
+        .alert {
+            border: 1px solid var(--gt-gold);
+            background-color: var(--light-gray);
+        }
+
+        .text-muted {
+            color: var(--gt-dark-gold) !important;
         }
     </style>
 </head>

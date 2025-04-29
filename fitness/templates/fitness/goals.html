@@ -1,0 +1,65 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Goals</h2>
+    
+    <!-- Add Goal Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Add New Goal</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'add_goal' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="title">Goal Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="target_date">Target Date</label>
+                    <input type="date" class="form-control" id="target_date" name="target_date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Goals List -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Current Goals</h4>
+        </div>
+        <div class="card-body">
+            {% if goals %}
+                <div class="list-group">
+                    {% for goal in goals %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ goal.title }}</h5>
+                                <small>Target: {{ goal.target_date|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-1">{{ goal.description }}</p>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%">
+                                    {{ goal.progress }}%
+                                </div>
+                            </div>
+                            <small>
+                                <a href="{% url 'update_goal' goal.id %}" class="btn btn-sm btn-outline-primary">Update</a>
+                                <a href="{% url 'delete_goal' goal.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No goals set yet. Add your first goal above!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

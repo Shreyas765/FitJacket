@@ -1,0 +1,75 @@
+{% extends 'fitness/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Workouts</h2>
+    
+    <!-- Add Workout Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Add New Workout</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'add_workout' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="name">Workout Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="workout_type">Type</label>
+                    <select class="form-control" id="workout_type" name="workout_type" required>
+                        <option value="cardio">Cardio</option>
+                        <option value="strength">Strength Training</option>
+                        <option value="flexibility">Flexibility</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="duration">Duration (minutes)</label>
+                    <input type="number" class="form-control" id="duration" name="duration" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Workout</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Workouts List -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Workout History</h4>
+        </div>
+        <div class="card-body">
+            {% if workouts %}
+                <div class="list-group">
+                    {% for workout in workouts %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ workout.name }}</h5>
+                                <small>{{ workout.date|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Type:</strong> {{ workout.get_workout_type_display }}<br>
+                                <strong>Duration:</strong> {{ workout.duration }} minutes
+                            </p>
+                            {% if workout.notes %}
+                                <p class="mb-1">{{ workout.notes }}</p>
+                            {% endif %}
+                            <small>
+                                <a href="{% url 'update_workout' workout.id %}" class="btn btn-sm btn-outline-primary">Update</a>
+                                <a href="{% url 'delete_workout' workout.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No workouts recorded yet. Add your first workout above!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

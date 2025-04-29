@@ -127,10 +127,16 @@
                         {% for achievement in achievements|slice:":6" %}
                             <div class="col-md-4 mb-3">
                                 <div class="text-center">
-                                    <img src="{{ achievement.achievement.badge_image.url }}" 
-                                         alt="{{ achievement.achievement.name }}"
-                                         class="img-fluid mb-2"
-                                         style="max-width: 100px;">
+                                    {% if achievement.achievement.badge_image %}
+                                        <img src="{{ achievement.achievement.badge_image.url }}" 
+                                             alt="{{ achievement.achievement.name }}"
+                                             class="img-fluid mb-2"
+                                             style="max-width: 100px;">
+                                    {% else %}
+                                        <div class="achievement-placeholder mb-2" style="width: 100px; height: 100px; background-color: var(--light-gray); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-trophy-fill" style="font-size: 2rem; color: var(--gt-gold);"></i>
+                                        </div>
+                                    {% endif %}
                                     <h6>{{ achievement.achievement.name }}</h6>
                                     <small class="text-muted">{{ achievement.earned_at|date:"M d, Y" }}</small>
                                 </div>
